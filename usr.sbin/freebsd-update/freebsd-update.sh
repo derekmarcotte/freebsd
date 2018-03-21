@@ -1167,19 +1167,24 @@ fetch_key () {
 
 # Fetch metadata signature, aka "tag".
 fetch_tag () {
-	echo -n "Fetching metadata signature "
-	echo ${NDEBUG} "for ${RELNUM} from ${SERVERNAME}... "
-	rm -f latest.ssl
-	fetch ${QUIETFLAG} http://${SERVERNAME}/${FETCHDIR}/latest.ssl	\
-	    2>${QUIETREDIR} || true
-	if ! [ -r latest.ssl ]; then
-		echo "failed."
-		return 1
-	fi
+	if [ -z "$1" ]; then
+		echo -n "Fetching metadata signature "
+		echo ${NDEBUG} "for ${RELNUM} from ${SERVERNAME}... "
+		rm -f latest.ssl
+		fetch ${QUIETFLAG} http://${SERVERNAME}/${FETCHDIR}/latest.ssl	\
+		    2>${QUIETREDIR} || true
+		if ! [ -r latest.ssl ]; then
+			echo "failed."
+			return 1
+		fi
 
-	openssl rsautl -pubin -inkey pub.ssl -verify		\
-	    < latest.ssl > tag.new 2>${QUIETREDIR} || true
-	rm latest.ssl
+		openssl rsautl -pubin -inkey pub.ssl -verify		\
+		    < latest.ssl > tag.new 2>${QUIETREDIR} || true
+		rm latest.ssl
+	else
+		echo "Using metadata signature from environment TAG_OVERRIDE."
+		echo "$1" > tag.new
+	fi
 
 	if ! [ `wc -l < tag.new` = 1 ] ||
 	    ! grep -qE	\
@@ -2121,7 +2126,7 @@ fetch_run () {
 
 	# Try to fetch the metadata index signature ("tag") until we run
 	# out of available servers; and sanity check the downloaded tag.
-	while ! fetch_tag; do
+	while ! fetch_tag "$TAG_OVERRIDE"; do
 		fetch_pick_server || return 1
 	done
 	fetch_tagsanity || return 1
@@ -2588,7 +2593,7 @@ upgrade_run () {
 
 	# Try to fetch the NEW metadata index signature ("tag") until we run
 	# out of available servers; and sanity check the downloaded tag.
-	while ! fetch_tag; do
+	while ! fetch_tag "$TAG_OVERRIDE"; do
 		fetch_pick_server || return 1
 	done
 
