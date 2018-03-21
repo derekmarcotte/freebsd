@@ -33,6 +33,18 @@
 # --debug	-- don't filter output from utilities
 # --no-stats	-- don't show progress statistics while fetching files
 usage () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "usage" "enter" "$@" >> $TRACEFILE
+	real_usage "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "usage" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_usage () {
 	cat <<EOF
 usage: `basename $0` [options] command ... [path]
 
@@ -97,6 +109,18 @@ CONFIGOPTIONS="KEYPRINT WORKDIR SERVERNAME MAILTO ALLOWADD ALLOWDELETE
 
 # Set all the configuration options to "".
 nullconfig () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "nullconfig" "enter" "$@" >> $TRACEFILE
+	real_nullconfig "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "nullconfig" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_nullconfig () {
 	for X in ${CONFIGOPTIONS}; do
 		eval ${X}=""
 	done
@@ -104,6 +128,18 @@ nullconfig () {
 
 # For each configuration option X, set X_saved to X.
 saveconfig () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "saveconfig" "enter" "$@" >> $TRACEFILE
+	real_saveconfig "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "saveconfig" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_saveconfig () {
 	for X in ${CONFIGOPTIONS}; do
 		eval ${X}_saved=\$${X}
 	done
@@ -111,6 +147,18 @@ saveconfig () {
 
 # For each configuration option X, set X to X_saved if X_saved is not "".
 mergeconfig () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "mergeconfig" "enter" "$@" >> $TRACEFILE
+	real_mergeconfig "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "mergeconfig" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_mergeconfig () {
 	for X in ${CONFIGOPTIONS}; do
 		eval _=\$${X}_saved
 		if ! [ -z "${_}" ]; then
@@ -121,6 +169,18 @@ mergeconfig () {
 
 # Set the trusted keyprint.
 config_KeyPrint () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_KeyPrint" "enter" "$@" >> $TRACEFILE
+	real_config_KeyPrint "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_KeyPrint" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_KeyPrint () {
 	if [ -z ${KEYPRINT} ]; then
 		KEYPRINT=$1
 	else
@@ -130,6 +190,18 @@ config_KeyPrint () {
 
 # Set the working directory.
 config_WorkDir () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_WorkDir" "enter" "$@" >> $TRACEFILE
+	real_config_WorkDir "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_WorkDir" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_WorkDir () {
 	if [ -z ${WORKDIR} ]; then
 		WORKDIR=$1
 	else
@@ -139,6 +211,18 @@ config_WorkDir () {
 
 # Set the name of the server (pool) from which to fetch updates
 config_ServerName () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_ServerName" "enter" "$@" >> $TRACEFILE
+	real_config_ServerName "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_ServerName" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_ServerName () {
 	if [ -z ${SERVERNAME} ]; then
 		SERVERNAME=$1
 	else
@@ -148,6 +232,18 @@ config_ServerName () {
 
 # Set the address to which 'cron' output will be mailed.
 config_MailTo () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_MailTo" "enter" "$@" >> $TRACEFILE
+	real_config_MailTo "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_MailTo" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_MailTo () {
 	if [ -z ${MAILTO} ]; then
 		MAILTO=$1
 	else
@@ -158,6 +254,18 @@ config_MailTo () {
 # Set whether FreeBSD Update is allowed to add files (or directories, or
 # symlinks) which did not previously exist.
 config_AllowAdd () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_AllowAdd" "enter" "$@" >> $TRACEFILE
+	real_config_AllowAdd "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_AllowAdd" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_AllowAdd () {
 	if [ -z ${ALLOWADD} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -177,6 +285,18 @@ config_AllowAdd () {
 
 # Set whether FreeBSD Update is allowed to remove files/directories/symlinks.
 config_AllowDelete () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_AllowDelete" "enter" "$@" >> $TRACEFILE
+	real_config_AllowDelete "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_AllowDelete" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_AllowDelete () {
 	if [ -z ${ALLOWDELETE} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -198,6 +318,18 @@ config_AllowDelete () {
 # permissions, and flags, in the event that they have been modified locally
 # after the release.
 config_KeepModifiedMetadata () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_KeepModifiedMetadata" "enter" "$@" >> $TRACEFILE
+	real_config_KeepModifiedMetadata "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_KeepModifiedMetadata" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_KeepModifiedMetadata () {
 	if [ -z ${KEEPMODIFIEDMETADATA} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -217,6 +349,18 @@ config_KeepModifiedMetadata () {
 
 # Add to the list of components which should be kept updated.
 config_Components () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_Components" "enter" "$@" >> $TRACEFILE
+	real_config_Components "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_Components" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_Components () {
 	for C in $@; do
 		if [ "$C" = "src" ]; then
 			if [ -e /usr/src/COPYRIGHT ]; then
@@ -232,6 +376,18 @@ config_Components () {
 
 # Add to the list of paths under which updates will be ignored.
 config_IgnorePaths () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_IgnorePaths" "enter" "$@" >> $TRACEFILE
+	real_config_IgnorePaths "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_IgnorePaths" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_IgnorePaths () {
 	for C in $@; do
 		IGNOREPATHS="${IGNOREPATHS} ${C}"
 	done
@@ -239,6 +395,18 @@ config_IgnorePaths () {
 
 # Add to the list of paths which IDS should ignore.
 config_IDSIgnorePaths () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_IDSIgnorePaths" "enter" "$@" >> $TRACEFILE
+	real_config_IDSIgnorePaths "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_IDSIgnorePaths" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_IDSIgnorePaths () {
 	for C in $@; do
 		IDSIGNOREPATHS="${IDSIGNOREPATHS} ${C}"
 	done
@@ -247,6 +415,18 @@ config_IDSIgnorePaths () {
 # Add to the list of paths within which updates will be performed only if the
 # file on disk has not been modified locally.
 config_UpdateIfUnmodified () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_UpdateIfUnmodified" "enter" "$@" >> $TRACEFILE
+	real_config_UpdateIfUnmodified "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_UpdateIfUnmodified" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_UpdateIfUnmodified () {
 	for C in $@; do
 		UPDATEIFUNMODIFIED="${UPDATEIFUNMODIFIED} ${C}"
 	done
@@ -255,6 +435,18 @@ config_UpdateIfUnmodified () {
 # Add to the list of paths within which updates to text files will be merged
 # instead of overwritten.
 config_MergeChanges () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_MergeChanges" "enter" "$@" >> $TRACEFILE
+	real_config_MergeChanges "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_MergeChanges" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_MergeChanges () {
 	for C in $@; do
 		MERGECHANGES="${MERGECHANGES} ${C}"
 	done
@@ -262,6 +454,18 @@ config_MergeChanges () {
 
 # Work on a FreeBSD installation mounted under $1
 config_BaseDir () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BaseDir" "enter" "$@" >> $TRACEFILE
+	real_config_BaseDir "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BaseDir" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_BaseDir () {
 	if [ -z ${BASEDIR} ]; then
 		BASEDIR=$1
 	else
@@ -273,6 +477,18 @@ config_BaseDir () {
 # components listed in COMPONENTS, rather than trying to guess based on
 # what's currently installed?
 config_StrictComponents () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_StrictComponents" "enter" "$@" >> $TRACEFILE
+	real_config_StrictComponents "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_StrictComponents" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_StrictComponents () {
 	if [ -z ${STRICTCOMPONENTS} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -292,6 +508,18 @@ config_StrictComponents () {
 
 # Upgrade to FreeBSD $1
 config_TargetRelease () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_TargetRelease" "enter" "$@" >> $TRACEFILE
+	real_config_TargetRelease "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_TargetRelease" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_TargetRelease () {
 	if [ -z ${TARGETRELEASE} ]; then
 		TARGETRELEASE=$1
 	else
@@ -304,6 +532,18 @@ config_TargetRelease () {
 
 # Define what happens to output of utilities
 config_VerboseLevel () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_VerboseLevel" "enter" "$@" >> $TRACEFILE
+	real_config_VerboseLevel "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_VerboseLevel" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_VerboseLevel () {
 	if [ -z ${VERBOSELEVEL} ]; then
 		case $1 in
 		[Dd][Ee][Bb][Uu][Gg])
@@ -325,6 +565,18 @@ config_VerboseLevel () {
 }
 
 config_BackupKernel () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernel" "enter" "$@" >> $TRACEFILE
+	real_config_BackupKernel "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernel" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_BackupKernel () {
 	if [ -z ${BACKUPKERNEL} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -343,6 +595,18 @@ config_BackupKernel () {
 }
 
 config_BackupKernelDir () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernelDir" "enter" "$@" >> $TRACEFILE
+	real_config_BackupKernelDir "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernelDir" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_BackupKernelDir () {
 	if [ -z ${BACKUPKERNELDIR} ]; then
 		if [ -z "$1" ]; then
 			echo "BackupKernelDir set to empty dir"
@@ -371,6 +635,18 @@ config_BackupKernelDir () {
 }
 
 config_BackupKernelSymbolFiles () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernelSymbolFiles" "enter" "$@" >> $TRACEFILE
+	real_config_BackupKernelSymbolFiles "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "config_BackupKernelSymbolFiles" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_config_BackupKernelSymbolFiles () {
 	if [ -z ${BACKUPKERNELSYMBOLFILES} ]; then
 		case $1 in
 		[Yy][Ee][Ss])
@@ -390,6 +666,18 @@ config_BackupKernelSymbolFiles () {
 
 # Handle one line of configuration
 configline () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "configline" "enter" "$@" >> $TRACEFILE
+	real_configline "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "configline" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_configline () {
 	if [ $# -eq 0 ]; then
 		return
 	fi
@@ -404,6 +692,18 @@ configline () {
 # Initialize parameters to null, just in case they're
 # set in the environment.
 init_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "init_params" "enter" "$@" >> $TRACEFILE
+	real_init_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "init_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_init_params () {
 	# Configration settings
 	nullconfig
 
@@ -422,6 +722,18 @@ init_params () {
 
 # Parse the command line
 parse_cmdline () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "parse_cmdline" "enter" "$@" >> $TRACEFILE
+	real_parse_cmdline "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "parse_cmdline" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_parse_cmdline () {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		# Location of configuration file
@@ -499,6 +811,18 @@ parse_cmdline () {
 
 # Parse the configuration file
 parse_conffile () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "parse_conffile" "enter" "$@" >> $TRACEFILE
+	real_parse_conffile "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "parse_conffile" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_parse_conffile () {
 	# If a configuration file was specified on the command line, check
 	# that it exists and is readable.
 	if [ ! -z "${CONFFILE}" ] && [ ! -r "${CONFFILE}" ]; then
@@ -543,6 +867,18 @@ parse_conffile () {
 
 # Provide some default parameters
 default_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "default_params" "enter" "$@" >> $TRACEFILE
+	real_default_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "default_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_default_params () {
 	# Save any parameters already configured, and clear the slate
 	saveconfig
 	nullconfig
@@ -566,6 +902,18 @@ default_params () {
 
 # Set utility output filtering options, based on ${VERBOSELEVEL}
 fetch_setup_verboselevel () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_setup_verboselevel" "enter" "$@" >> $TRACEFILE
+	real_fetch_setup_verboselevel "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_setup_verboselevel" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_setup_verboselevel () {
 	case ${VERBOSELEVEL} in
 	debug)
 		QUIETREDIR="/dev/stderr"
@@ -601,6 +949,18 @@ fetch_setup_verboselevel () {
 # user is running -SECURITY, call it -RELEASE.  Chdir
 # into the working directory.
 fetchupgrade_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetchupgrade_check_params" "enter" "$@" >> $TRACEFILE
+	real_fetchupgrade_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetchupgrade_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetchupgrade_check_params () {
 	export HTTP_USER_AGENT="freebsd-update (${COMMAND}, `uname -r`)"
 
 	_SERVERNAME_z=\
@@ -693,6 +1053,18 @@ fetchupgrade_check_params () {
 
 # Perform sanity checks etc. before fetching updates.
 fetch_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_check_params" "enter" "$@" >> $TRACEFILE
+	real_fetch_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_check_params () {
 	fetchupgrade_check_params
 
 	if ! [ -z "${TARGETRELEASE}" ]; then
@@ -713,6 +1085,18 @@ fetch_check_params () {
 
 # Perform sanity checks etc. before fetching upgrades.
 upgrade_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_check_params" "enter" "$@" >> $TRACEFILE
+	real_upgrade_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_check_params () {
 	fetchupgrade_check_params
 
 	# Unless set otherwise, we're upgrading to the same kernel config.
@@ -754,6 +1138,18 @@ upgrade_check_params () {
 # Perform sanity checks and set some final parameters in
 # preparation for installing updates.
 install_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_check_params" "enter" "$@" >> $TRACEFILE
+	real_install_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_check_params () {
 	# Check that we are root.  All sorts of things won't work otherwise.
 	if [ `id -u` != 0 ]; then
 		echo "You must be root to run this."
@@ -805,6 +1201,18 @@ install_check_params () {
 # Perform sanity checks and set some final parameters in
 # preparation for UNinstalling updates.
 rollback_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_check_params" "enter" "$@" >> $TRACEFILE
+	real_rollback_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_rollback_check_params () {
 	# Check that we are root.  All sorts of things won't work otherwise.
 	if [ `id -u` != 0 ]; then
 		echo "You must be root to run this."
@@ -844,6 +1252,18 @@ rollback_check_params () {
 # -SECURITY, call it -RELEASE.  Chdir into the working
 # directory.
 IDS_check_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_check_params" "enter" "$@" >> $TRACEFILE
+	real_IDS_check_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_check_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_IDS_check_params () {
 	export HTTP_USER_AGENT="freebsd-update (${COMMAND}, `uname -r`)"
 
 	_SERVERNAME_z=\
@@ -937,6 +1357,18 @@ IDS_check_params () {
 # Fetch the mirror list, but do not pick a mirror yet.  Returns 1 if
 # no mirrors are available for any reason.
 fetch_pick_server_init () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_pick_server_init" "enter" "$@" >> $TRACEFILE
+	real_fetch_pick_server_init "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_pick_server_init" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_pick_server_init () {
 	: > serverlist_tried
 
 # Check that host(1) exists (i.e., that the system wasn't built with the
@@ -981,6 +1413,18 @@ fetch_pick_server_init () {
 
 # Pick a mirror.  Returns 1 if we have run out of mirrors to try.
 fetch_pick_server () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_pick_server" "enter" "$@" >> $TRACEFILE
+	real_fetch_pick_server "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_pick_server" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_pick_server () {
 # Generate a list of not-yet-tried mirrors
 	sort serverlist_tried |
 	    comm -23 serverlist_full - > serverlist
@@ -1039,6 +1483,18 @@ fetch_pick_server () {
 # Take a list of ${oldhash}|${newhash} and output a list of needed patches,
 # i.e., those for which we have ${oldhash} and don't have ${newhash}.
 fetch_make_patchlist () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_make_patchlist" "enter" "$@" >> $TRACEFILE
+	real_fetch_make_patchlist "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_make_patchlist" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_make_patchlist () {
 	grep -vE "^([0-9a-f]{64})\|\1$" |
 	    tr '|' ' ' |
 		while read X Y; do
@@ -1052,6 +1508,18 @@ fetch_make_patchlist () {
 
 # Print user-friendly progress statistics
 fetch_progress () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_progress" "enter" "$@" >> $TRACEFILE
+	real_fetch_progress "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_progress" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_progress () {
 	LNC=0
 	while read x; do
 		LNC=$(($LNC + 1))
@@ -1066,6 +1534,18 @@ fetch_progress () {
 
 # Function for asking the user if everything is ok
 continuep () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "continuep" "enter" "$@" >> $TRACEFILE
+	real_continuep "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "continuep" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_continuep () {
 	while read -p "Does this look reasonable (y/n)? " CONTINUE; do
 		case "${CONTINUE}" in
 		y*)
@@ -1080,6 +1560,18 @@ continuep () {
 
 # Initialize the working directory
 workdir_init () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "workdir_init" "enter" "$@" >> $TRACEFILE
+	real_workdir_init "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "workdir_init" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_workdir_init () {
 	mkdir -p files
 	touch tINDEX.present
 }
@@ -1088,6 +1580,18 @@ workdir_init () {
 # fetch the key if it doesn't exist.  Returns 1 if the key has
 # not yet been fetched.
 fetch_key () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_key" "enter" "$@" >> $TRACEFILE
+	real_fetch_key "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_key" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_key () {
 	if [ -r pub.ssl ] && [ `${SHA256} -q pub.ssl` = ${KEYPRINT} ]; then
 		return 0
 	fi
@@ -1110,6 +1614,18 @@ fetch_key () {
 
 # Fetch metadata signature, aka "tag".
 fetch_tag () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_tag" "enter" "$@" >> $TRACEFILE
+	real_fetch_tag "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_tag" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_tag () {
 	if [ -z "$1" ]; then
 		echo -n "Fetching metadata signature "
 		echo ${NDEBUG} "for ${RELNUM} from ${SERVERNAME}... "
@@ -1147,6 +1663,18 @@ fetch_tag () {
 # Sanity-check the patch number in a tag, to make sure that we're not
 # going to "update" backwards and to prevent replay attacks.
 fetch_tagsanity () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_tagsanity" "enter" "$@" >> $TRACEFILE
+	real_fetch_tagsanity "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_tagsanity" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_tagsanity () {
 	# Check that we're not going to move from -pX to -pY with Y < X.
 	RELPX=`uname -r | sed -E 's,.*-,,'`
 	if echo ${RELPX} | grep -qE '^p[0-9]+$'; then
@@ -1186,6 +1714,18 @@ fetch_tagsanity () {
 
 # Fetch metadata index file
 fetch_metadata_index () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata_index "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata_index () {
 	echo ${NDEBUG} "Fetching metadata index... "
 	rm -f ${TINDEXHASH}
 	fetch ${QUIETFLAG} http://${SERVERNAME}/${FETCHDIR}/t/${TINDEXHASH}
@@ -1203,6 +1743,18 @@ fetch_metadata_index () {
 
 # Print an error message about signed metadata being bogus.
 fetch_metadata_bogus () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_bogus" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata_bogus "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_bogus" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata_bogus () {
 	echo
 	echo "The update metadata$1 is correctly signed, but"
 	echo "failed an integrity check."
@@ -1213,6 +1765,18 @@ fetch_metadata_bogus () {
 # Construct tINDEX.new by merging the lines named in $1 from ${TINDEXHASH}
 # with the lines not named in $@ from tINDEX.present (if that file exists).
 fetch_metadata_index_merge () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index_merge" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata_index_merge "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index_merge" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata_index_merge () {
 	for METAFILE in $@; do
 		if [ `grep -E "^${METAFILE}\|" ${TINDEXHASH} | wc -l`	\
 		    -ne 1 ]; then
@@ -1238,6 +1802,18 @@ fetch_metadata_index_merge () {
 # since the only lines which appear in tINDEX.new are the ones which we
 # specifically grepped out of ${TINDEXHASH}.
 fetch_metadata_index_sanity () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index_sanity" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata_index_sanity "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_index_sanity" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata_index_sanity () {
 	if grep -qvE '^[0-9A-Z.-]+\|[0-9a-f]{64}$' tINDEX.new; then
 		fetch_metadata_bogus " index"
 		return 1
@@ -1246,6 +1822,18 @@ fetch_metadata_index_sanity () {
 
 # Sanity check the metadata file $1.
 fetch_metadata_sanity () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_sanity" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata_sanity "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata_sanity" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata_sanity () {
 	# Some aliases to save space later: ${P} is a character which can
 	# appear in a path; ${M} is the four numeric metadata fields; and
 	# ${H} is a sha256 hash.
@@ -1299,6 +1887,18 @@ fetch_metadata_sanity () {
 # Fetch the metadata index and metadata files listed in $@,
 # taking advantage of metadata patches where possible.
 fetch_metadata () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata" "enter" "$@" >> $TRACEFILE
+	real_fetch_metadata "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_metadata" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_metadata () {
 	fetch_metadata_index || return 1
 	fetch_metadata_index_merge $@ || return 1
 	fetch_metadata_index_sanity || return 1
@@ -1410,6 +2010,18 @@ fetch_metadata () {
 # Extract a subset of a downloaded metadata file containing only the parts
 # which are listed in COMPONENTS.
 fetch_filter_metadata_components () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_metadata_components" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_metadata_components "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_metadata_components" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_metadata_components () {
 	METAHASH=`look "$1|" tINDEX.present | cut -f 2 -d '|'`
 	gunzip -c < files/${METAHASH}.gz > $1.all
 
@@ -1427,6 +2039,18 @@ fetch_filter_metadata_components () {
 # to keep updated, and then removing lines corresponding to paths we want
 # to ignore.
 fetch_filter_metadata () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_metadata" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_metadata "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_metadata" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_metadata () {
 	# Fish out the lines belonging to components we care about.
 	fetch_filter_metadata_components $1
 
@@ -1457,6 +2081,18 @@ fetch_filter_metadata () {
 # Put another way: Deal with the fact that the FOO kernel is sometimes
 # installed in /boot/FOO/ and is sometimes installed elsewhere.
 fetch_filter_kernel_names () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_kernel_names" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_kernel_names "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_kernel_names" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_kernel_names () {
 	grep ^/boot/$2 $1 |
 	    sed -e "s,/boot/$2,${KERNELDIR},g" |
 	    sort - $1 > $1.tmp
@@ -1471,6 +2107,18 @@ fetch_filter_kernel_names () {
 # For all paths appearing in $1 or $3, inspect the system
 # and generate $2 describing what is currently installed.
 fetch_inspect_system () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_inspect_system" "enter" "$@" >> $TRACEFILE
+	real_fetch_inspect_system "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_inspect_system" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_inspect_system () {
 	# No errors yet...
 	rm -f .err
 
@@ -1549,6 +2197,18 @@ fetch_inspect_system () {
 # For any paths matching ${MERGECHANGES}, compare $1 and $2 and find any
 # files which differ; generate $3 containing these paths and the old hashes.
 fetch_filter_mergechanges () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_mergechanges" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_mergechanges "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_mergechanges" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_mergechanges () {
 	# Pull out the paths and hashes of the files matching ${MERGECHANGES}.
 	for F in $1 $2; do
 		for X in ${MERGECHANGES}; do
@@ -1584,6 +2244,18 @@ fetch_filter_mergechanges () {
 # (aka. type -), remove lines from $[123] unless there is a corresponding
 # entry in $1.
 fetch_filter_unmodified_notpresent () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_unmodified_notpresent" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_unmodified_notpresent "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_unmodified_notpresent" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_unmodified_notpresent () {
 	# Figure out which lines of $1 and $3 correspond to bits which
 	# should only be updated if they haven't changed, and fish out
 	# the (path, type, value) tuples.
@@ -1640,6 +2312,18 @@ fetch_filter_unmodified_notpresent () {
 # entry from $2 if ${ALLOWADD} != "yes".  Remove all entries
 # of type - from $1.
 fetch_filter_allowadd () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_allowadd" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_allowadd "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_allowadd" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_allowadd () {
 	cut -f 1,2 -d '|' < $1 |
 	    fgrep '|-' |
 	    cut -f 1 -d '|' > filesnotpresent
@@ -1661,6 +2345,18 @@ fetch_filter_allowadd () {
 # If ${ALLOWDELETE} != "yes", then remove any entries from $1
 # which don't correspond to entries in $2.
 fetch_filter_allowdelete () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_allowdelete" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_allowdelete "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_allowdelete" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_allowdelete () {
 	# Produce a lists ${PATH}|${TYPE}
 	for X in $1 $2; do
 		cut -f 1-2 -d '|' < ${X} |
@@ -1688,6 +2384,18 @@ fetch_filter_allowdelete () {
 # with metadata not matching any entry in $1, replace the corresponding
 # line of $3 with one having the same metadata as the entry in $2.
 fetch_filter_modified_metadata () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_modified_metadata" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_modified_metadata "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_modified_metadata" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_modified_metadata () {
 	# Fish out the metadata from $1 and $2
 	for X in $1 $2; do
 		cut -f 1-6 -d '|' < ${X} > ${X}.metadata
@@ -1724,6 +2432,18 @@ fetch_filter_modified_metadata () {
 # Remove lines from $1 and $2 which are identical;
 # no need to update a file if it isn't changing.
 fetch_filter_uptodate () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_uptodate" "enter" "$@" >> $TRACEFILE
+	real_fetch_filter_uptodate "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_filter_uptodate" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_filter_uptodate () {
 	comm -23 $1 $2 > $1.tmp
 	comm -13 $1 $2 > $2.tmp
 
@@ -1733,6 +2453,18 @@ fetch_filter_uptodate () {
 
 # Fetch any "clean" old versions of files we need for merging changes.
 fetch_files_premerge () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files_premerge" "enter" "$@" >> $TRACEFILE
+	real_fetch_files_premerge "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files_premerge" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_files_premerge () {
 	# We only need to do anything if $1 is non-empty.
 	if [ -s $1 ]; then
 		# Tell the user what we're doing
@@ -1780,6 +2512,18 @@ fetch_files_premerge () {
 # copy the unmodified files we have into /files/, and generate
 # a list of patches to download.
 fetch_files_prepare () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files_prepare" "enter" "$@" >> $TRACEFILE
+	real_fetch_files_prepare "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files_prepare" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_files_prepare () {
 	# Tell the user why his disk is suddenly making lots of noise
 	echo -n "Preparing to download files... "
 
@@ -1846,6 +2590,18 @@ fetch_files_prepare () {
 
 # Fetch files.
 fetch_files () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files" "enter" "$@" >> $TRACEFILE
+	real_fetch_files "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_files" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_files () {
 	# Attempt to fetch patches
 	if [ -s patchlist ]; then
 		echo -n "Fetching `wc -l < patchlist | tr -d ' '` "
@@ -1911,6 +2667,18 @@ fetch_files () {
 # Create and populate install manifest directory; and report what updates
 # are available.
 fetch_create_manifest () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_create_manifest" "enter" "$@" >> $TRACEFILE
+	real_fetch_create_manifest "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_create_manifest" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_create_manifest () {
 	# If we have an existing install manifest, nuke it.
 	if [ -L "${BDHASH}-install" ]; then
 		rm -r ${BDHASH}-install/
@@ -1990,6 +2758,18 @@ fetch_create_manifest () {
 
 # Warn about any upcoming EoL
 fetch_warn_eol () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_warn_eol" "enter" "$@" >> $TRACEFILE
+	real_fetch_warn_eol "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_warn_eol" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_warn_eol () {
 	# What's the current time?
 	NOWTIME=`date "+%s"`
 
@@ -2059,6 +2839,18 @@ fetch_warn_eol () {
 
 # Do the actual work involved in "fetch" / "cron".
 fetch_run () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_run" "enter" "$@" >> $TRACEFILE
+	real_fetch_run "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "fetch_run" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_fetch_run () {
 	workdir_init || return 1
 
 	# Prepare the mirror list.
@@ -2139,6 +2931,18 @@ fetch_run () {
 # If StrictComponents is not "yes", generate a new components list
 # with only the components which appear to be installed.
 upgrade_guess_components () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_guess_components" "enter" "$@" >> $TRACEFILE
+	real_upgrade_guess_components "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_guess_components" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_guess_components () {
 	if [ "${STRICTCOMPONENTS}" = "no" ]; then
 		# Generate filtered INDEX-ALL with only the components listed
 		# in COMPONENTS.
@@ -2243,6 +3047,18 @@ before running "$0 install".
 # does not exist in the new release, add "kernel/generic" to the
 # list of components.
 upgrade_guess_new_kernel () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_guess_new_kernel" "enter" "$@" >> $TRACEFILE
+	real_upgrade_guess_new_kernel "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_guess_new_kernel" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_guess_new_kernel () {
 	if [ "${STRICTCOMPONENTS}" = "no" ]; then
 		# Grab the unfiltered metadata file.
 		METAHASH=`look "$1|" tINDEX.present | cut -f 2 -d '|'`
@@ -2274,6 +3090,18 @@ replaced with a "generic" kernel.
 # Convert INDEX-OLD (last release) and INDEX-ALL (new release) into
 # INDEX-OLD and INDEX-NEW files (in the sense of normal upgrades).
 upgrade_oldall_to_oldnew () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_oldall_to_oldnew" "enter" "$@" >> $TRACEFILE
+	real_upgrade_oldall_to_oldnew "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_oldall_to_oldnew" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_oldall_to_oldnew () {
 	# For each ${F}|... which appears in INDEX-ALL but does not appear
 	# in INDEX-OLD, add ${F}|-|||||| to INDEX-OLD.
 	cut -f 1 -d '|' < $1 |
@@ -2307,6 +3135,18 @@ upgrade_oldall_to_oldnew () {
 # Helper for upgrade_merge: Return zero true iff the two files differ only
 # in the contents of their RCS tags.
 samef () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "samef" "enter" "$@" >> $TRACEFILE
+	real_samef "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "samef" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_samef () {
 	X=`sed -E 's/\\$FreeBSD.*\\$/\$FreeBSD\$/' < $1 | ${SHA256}`
 	Y=`sed -E 's/\\$FreeBSD.*\\$/\$FreeBSD\$/' < $2 | ${SHA256}`
 
@@ -2320,6 +3160,18 @@ samef () {
 # From the list of "old" files in $1, merge changes in $2 with those in $3,
 # and update $3 to reflect the hashes of merged files.
 upgrade_merge () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_merge" "enter" "$@" >> $TRACEFILE
+	real_upgrade_merge "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_merge" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_merge () {
 	# We only need to do anything if $1 is non-empty.
 	if [ -s $1 ]; then
 		cut -f 1 -d '|' $1 |
@@ -2496,6 +3348,18 @@ EOF
 
 # Do the work involved in fetching upgrades to a new release
 upgrade_run () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_run" "enter" "$@" >> $TRACEFILE
+	real_upgrade_run "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "upgrade_run" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_upgrade_run () {
 	workdir_init || return 1
 
 	# Prepare the mirror list.
@@ -2629,6 +3493,18 @@ upgrade_run () {
 # Make sure that all the file hashes mentioned in $@ have corresponding
 # gzipped files stored in /files/.
 install_verify () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_verify" "enter" "$@" >> $TRACEFILE
+	real_install_verify "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_verify" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_verify () {
 	# Generate a list of hashes
 	cat $@ |
 	    cut -f 2,7 -d '|' |
@@ -2652,6 +3528,18 @@ install_verify () {
 
 # Remove the system immutable flag from files
 install_unschg () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_unschg" "enter" "$@" >> $TRACEFILE
+	real_install_unschg "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_unschg" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_unschg () {
 	# Generate file list
 	cat $@ |
 	    cut -f 1 -d '|' > filelist
@@ -2671,6 +3559,18 @@ install_unschg () {
 
 # Decide which directory name to use for kernel backups.
 backup_kernel_finddir () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "backup_kernel_finddir" "enter" "$@" >> $TRACEFILE
+	real_backup_kernel_finddir "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "backup_kernel_finddir" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_backup_kernel_finddir () {
 	CNT=0
 	while true ; do
 		# Pathname does not exist, so it is OK use that name
@@ -2706,6 +3606,18 @@ backup_kernel_finddir () {
 # the unlikely case that the user has created a directory with a
 # conflicting name.
 backup_kernel () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "backup_kernel" "enter" "$@" >> $TRACEFILE
+	real_backup_kernel "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "backup_kernel" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_backup_kernel () {
 	# Only make kernel backup is so configured.
 	if [ $BACKUPKERNEL != yes ]; then
 		return 0
@@ -2754,6 +3666,18 @@ backup_kernel () {
 
 # Install new files
 install_from_index () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_from_index" "enter" "$@" >> $TRACEFILE
+	real_install_from_index "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_from_index" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_from_index () {
 	# First pass: Do everything apart from setting file flags.  We
 	# can't set flags yet, because schg inhibits hard linking.
 	sort -k 1,1 -t '|' $1 |
@@ -2796,6 +3720,18 @@ install_from_index () {
 
 # Remove files which we want to delete
 install_delete () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_delete" "enter" "$@" >> $TRACEFILE
+	real_install_delete "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_delete" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_delete () {
 	# Generate list of new files
 	cut -f 1 -d '|' < $2 |
 	    sort > newfiles
@@ -2828,6 +3764,18 @@ install_delete () {
 
 # Install new files, delete old files, and update linker.hints
 install_files () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_files" "enter" "$@" >> $TRACEFILE
+	real_install_files "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_files" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_files () {
 	# If we haven't already dealt with the kernel, deal with it.
 	if ! [ -f $1/kerneldone ]; then
 		grep -E '^/boot/' $1/INDEX-OLD > INDEX-OLD
@@ -2955,6 +3903,18 @@ again to finish installing updates.
 
 # Rearrange bits to allow the installed updates to be rolled back
 install_setup_rollback () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_setup_rollback" "enter" "$@" >> $TRACEFILE
+	real_install_setup_rollback "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_setup_rollback" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_setup_rollback () {
 	# Remove the "reboot after installing kernel", "kernel updated", and
 	# "finished installing the world" flags if present -- they are
 	# irrelevant when rolling back updates.
@@ -2975,6 +3935,18 @@ install_setup_rollback () {
 
 # Actually install updates
 install_run () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_run" "enter" "$@" >> $TRACEFILE
+	real_install_run "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "install_run" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_install_run () {
 	echo -n "Installing updates..."
 
 	# Make sure we have all the files we should have
@@ -2996,6 +3968,18 @@ install_run () {
 
 # Rearrange bits to allow the previous set of updates to be rolled back next.
 rollback_setup_rollback () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_setup_rollback" "enter" "$@" >> $TRACEFILE
+	real_rollback_setup_rollback "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_setup_rollback" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_rollback_setup_rollback () {
 	if [ -L ${BDHASH}-rollback/rollback ]; then
 		mv ${BDHASH}-rollback/rollback rollback-tmp
 		rm -r ${BDHASH}-rollback/
@@ -3009,6 +3993,18 @@ rollback_setup_rollback () {
 
 # Install old files, delete new files, and update linker.hints
 rollback_files () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_files" "enter" "$@" >> $TRACEFILE
+	real_rollback_files "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_files" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_rollback_files () {
 	# Install old shared library files which don't have the same path as
 	# a new shared library file.
 	grep -vE '^/boot/' $1/INDEX-NEW |
@@ -3058,6 +4054,18 @@ rollback_files () {
 
 # Actually rollback updates
 rollback_run () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_run" "enter" "$@" >> $TRACEFILE
+	real_rollback_run "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "rollback_run" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_rollback_run () {
 	echo -n "Uninstalling updates..."
 
 	# If there are updates waiting to be installed, remove them; we
@@ -3088,6 +4096,18 @@ rollback_run () {
 
 # Compare INDEX-ALL and INDEX-PRESENT and print warnings about differences.
 IDS_compare () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_compare" "enter" "$@" >> $TRACEFILE
+	real_IDS_compare "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_compare" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_IDS_compare () {
 	# Get all the lines which mismatch in something other than file
 	# flags.  We ignore file flags because sysinstall doesn't seem to
 	# set them when it installs FreeBSD; warning about these adds a
@@ -3183,6 +4203,18 @@ IDS_compare () {
 
 # Do the work involved in comparing the system to a "known good" index
 IDS_run () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_run" "enter" "$@" >> $TRACEFILE
+	real_IDS_run "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "IDS_run" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_IDS_run () {
 	workdir_init || return 1
 
 	# Prepare the mirror list.
@@ -3229,6 +4261,18 @@ IDS_run () {
 # Using the command line, configuration file, and defaults,
 # set all the parameters which are needed later.
 get_params () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "get_params" "enter" "$@" >> $TRACEFILE
+	real_get_params "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "get_params" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_get_params () {
 	init_params
 	parse_cmdline $@
 	parse_conffile
@@ -3238,6 +4282,18 @@ get_params () {
 # Fetch command.  Make sure that we're being called
 # interactively, then run fetch_check_params and fetch_run
 cmd_fetch () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_fetch" "enter" "$@" >> $TRACEFILE
+	real_cmd_fetch "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_fetch" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_fetch () {
 	if [ ! -t 0 -a $NOTTYOK -eq 0 ]; then
 		echo -n "`basename $0` fetch should not "
 		echo "be run non-interactively."
@@ -3253,6 +4309,18 @@ cmd_fetch () {
 # send output to a temporary file; only print that file if the
 # fetching failed.
 cmd_cron () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_cron" "enter" "$@" >> $TRACEFILE
+	real_cmd_cron "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_cron" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_cron () {
 	fetch_check_params
 	sleep `jot -r 1 0 3600`
 
@@ -3268,24 +4336,72 @@ cmd_cron () {
 
 # Fetch files for upgrading to a new release.
 cmd_upgrade () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_upgrade" "enter" "$@" >> $TRACEFILE
+	real_cmd_upgrade "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_upgrade" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_upgrade () {
 	upgrade_check_params
 	upgrade_run || exit 1
 }
 
 # Install downloaded updates.
 cmd_install () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_install" "enter" "$@" >> $TRACEFILE
+	real_cmd_install "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_install" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_install () {
 	install_check_params
 	install_run || exit 1
 }
 
 # Rollback most recently installed updates.
 cmd_rollback () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_rollback" "enter" "$@" >> $TRACEFILE
+	real_cmd_rollback "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_rollback" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_rollback () {
 	rollback_check_params
 	rollback_run || exit 1
 }
 
 # Compare system against a "known good" index.
 cmd_IDS () {
+	local out
+	local ret
+	DEPTH=$(( DEPTH + 1 ))
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_IDS" "enter" "$@" >> $TRACEFILE
+	real_cmd_IDS "$@"
+	ret=$?
+
+	printf ">%$(( (DEPTH-1) * 4 ))s%s (%s) %s\n" "" "cmd_IDS" "leave" "" >> $TRACEFILE
+	DEPTH=$(( DEPTH - 1 ))
+	return $ret
+}
+real_cmd_IDS () {
 	IDS_check_params
 	IDS_run || exit 1
 }
