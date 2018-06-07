@@ -150,7 +150,7 @@ crypt_makesalt(char *out, const char *format, size_t *outlen)
 		arc4random_buf(rand_buf, 3);
 		
 		diff = MIN(cf->salt_bytes - i, 4);
-		b64_from_24bit(rand_buf[2], rand_buf[1], rand_buf[0], diff, &diff, &out);
+		b64_from_24bit(rand_buf[2], rand_buf[1], rand_buf[0], diff, &out);
 	}
 	
 	/* cleanup */
@@ -279,7 +279,8 @@ crypt_r(const char *passwd, const char *salt, struct crypt_data *data)
 		goto match;
 	}
 #endif
-	func = crypt_format->func;
+	cf = crypt_find_format(default_format);
+	func = cf->func;
 match:
 	if (func(passwd, salt, data->__buf) != 0)
 		return (NULL);
