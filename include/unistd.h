@@ -292,8 +292,6 @@ typedef	__useconds_t	useconds_t;
 #define	_SC_NPROCESSORS_CONF	57
 #define	_SC_NPROCESSORS_ONLN	58
 #define	_SC_CPUSET_SIZE		122
-#define CRYPT_FORMAT_MAX_LEN	20 /* currently strlen("$6$rounds=999999999$") == 20 */
-#define CRYPT_SALT_MAX_LEN	37 /* currently strlen("$6$rounds=999999999$AAAABBBBCCCCDDDD$") == 37 */
 #endif
 
 /* Extensions found in Solaris and Linux. */

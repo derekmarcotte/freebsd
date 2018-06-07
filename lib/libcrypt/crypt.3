@@ -330,7 +330,7 @@ main()
 	char *global_static_buffer;
 	char final[_PASSWORD_LEN + 1];
 	char test[_PASSWORD_LEN + 1];
-	char salt[CRYPT_SALT_MAX_LEN + 1];
+	char salt[256];
 	size_t salt_sz = sizeof(salt);
 
 	int exit_code = 0;

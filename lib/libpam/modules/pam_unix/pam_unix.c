@@ -270,7 +270,7 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 	struct ypclnt *ypclnt;
 	const void *yp_domain, *yp_server;
 #endif
-	char salt[CRYPT_SALT_MAX_LEN + 1];
+	char salt[256];
 	size_t salt_sz;
 	login_cap_t *lc;
 	struct passwd *pwd, *old_pwd;
@@ -387,13 +387,7 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 		passwd_format = login_getcapstr(lc, "passwd_format", "", NULL);
 		if (crypt_makesalt(salt, passwd_format, &salt_sz) ) {
 			login_close(lc);
-			
-			if (salt_sz == sizeof(salt) ) {
-				PAM_LOG("Unable to create salt for crypt(3) format: %s", passwd_format);
-			} else {
-				PAM_LOG("Not enough space in buffer to create salt for format: %s. CRYPT_SALT_MAX_LEN is wrong. Buffer size: %zu, required: %zu", passwd_format, sizeof(salt), salt_sz);
-			}
-			
+			PAM_LOG("Unable to create salt for crypt(3) format: %s", passwd_format);
 			return (PAM_SERVICE_ERR);
 		}
 				

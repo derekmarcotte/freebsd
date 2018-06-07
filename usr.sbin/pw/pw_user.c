@@ -180,7 +180,7 @@ pw_set_passwd(struct passwd *pwd, int fd, bool precrypted, bool update)
 	login_cap_t	*lc;
 	char		line[_PASSWORD_LEN+1];
 	char		*p;
-	char		passwd_format[CRYPT_FORMAT_MAX_LEN + 1];
+	char		passwd_format[256];
 
 	if (fd == '-') {
 		if (!pwd->pw_passwd || *pwd->pw_passwd != '*') {
@@ -508,19 +508,14 @@ pw_shellpolicy(struct userconf * cnf)
 char           *
 pw_pwcrypt(const char *password, const char *format)
 {
-	char            salt[CRYPT_SALT_MAX_LEN + 1];
+	char            salt[256];
 	size_t		salt_sz = sizeof(salt);
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
 
 	if (crypt_makesalt(salt, format, &salt_sz) ) {
-		if (salt_sz == sizeof(salt) ) {
-			errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
-		} else {
-			/* really shouldn't get here */
-			errx(EX_CONFIG, "Not enough space to write salt to buffer.  CRYPT_SALT_MAX_LEN is wrong.");
-		}
+		errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
 	}
 
 	cryptpw = crypt(password, salt);
@@ -1220,7 +1215,7 @@ pw_user_add(int argc, char **argv, char *arg1)
 	int rc, ch, fd = -1;
 	size_t i;
 	bool dryrun, nis, pretty, quiet, createhome, precrypted, genconf;
-	char passwd_format[CRYPT_FORMAT_MAX_LEN + 1];
+	char passwd_format[256];
 
 	dryrun = nis = pretty = quiet = createhome = precrypted = false;
 	genconf = false;

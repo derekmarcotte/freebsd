@@ -80,9 +80,9 @@ static const struct crypt_format {
 
 #ifdef HAS_DES
 /* must be des if system has des */
-static char default_format[CRYPT_FORMAT_MAX_LEN + 1] = "des";
+static char default_format[256] = "des";
 #else 
-static char default_format[CRYPT_FORMAT_MAX_LEN + 1] = "sha512";
+static char default_format[256] = "sha512";
 #endif
 
 /* local-scope only */
