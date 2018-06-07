@@ -107,7 +107,7 @@ char const *boolean_str(int val);
 char *newstr(char const * p);
 
 void pw_log(struct userconf * cnf, int mode, int which, char const * fmt,...) __printflike(4, 5);
-char *pw_pwcrypt(char *password);
+char *pw_pwcrypt(const char *password, const char *format);
 
 extern const char *Modes[];
 extern const char *Which[];

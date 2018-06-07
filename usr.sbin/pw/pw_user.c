@@ -81,10 +81,11 @@ static char	*pw_homepolicy(struct userconf * cnf, char *homedir,
     const char *user);
 static char	*pw_shellpolicy(struct userconf * cnf);
 static char	*pw_password(struct userconf * cnf, char const * user,
-    bool dryrun);
+    char const * format, bool dryrun);
 static char	*shell_path(char const * path, char *shells[], char *sh);
 static void	rmat(uid_t uid);
 static void	rmopie(char const * name);
+static void	copy_passwd_format(char *passwd_format, login_cap_t *lc, size_t max);
 
 static void
 mkdir_home_parents(int dfd, const char *dir)
@@ -179,6 +180,7 @@ pw_set_passwd(struct passwd *pwd, int fd, bool precrypted, bool update)
 	login_cap_t	*lc;
 	char		line[_PASSWORD_LEN+1];
 	char		*p;
+	char		passwd_format[CRYPT_FORMAT_MAX_LEN + 1];
 
 	if (fd == '-') {
 		if (!pwd->pw_passwd || *pwd->pw_passwd != '*') {
@@ -224,13 +226,34 @@ pw_set_passwd(struct passwd *pwd, int fd, bool precrypted, bool update)
 		pwd->pw_passwd = strdup(line);
 	} else {
 		lc = login_getpwclass(pwd);
-		if (lc == NULL ||
-				login_setcryptfmt(lc, "sha512", NULL) == NULL)
-			warn("setting crypt(3) format");
+		copy_passwd_format(passwd_format, lc, sizeof(passwd_format) );
 		login_close(lc);
-		pwd->pw_passwd = pw_pwcrypt(line);
+		pwd->pw_passwd = pw_pwcrypt(line, passwd_format);
 	}
 	return (1);
+}
+
+void
+copy_passwd_format(char *passwd_format, login_cap_t *lc, size_t max) {
+	const char *cap;
+	const char *def = "sha512";
+
+	if (lc == NULL) {
+		warn("setting crypt(3) format");
+		strncpy(passwd_format, def, max);
+		return;
+	}
+
+
+	cap = login_getcapstr(lc, "passwd_format", def, NULL);
+	if (cap == NULL) {
+		warn("setting crypt(3) format");
+		strncpy(passwd_format, def, max);
+		return;
+	}
+
+	strncpy(passwd_format, cap, max);
+	return;
 }
 
 static void
@@ -482,25 +505,23 @@ pw_shellpolicy(struct userconf * cnf)
 	return shell_path(cnf->shelldir, cnf->shells, cnf->shell_default);
 }
 
-#define	SALTSIZE	32
-
-static char const chars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./";
-
-char *
-pw_pwcrypt(char *password)
+char           *
+pw_pwcrypt(const char *password, const char *format)
 {
-	int             i;
-	char            salt[SALTSIZE + 1];
+	char            salt[CRYPT_SALT_MAX_LEN + 1];
+	size_t		salt_sz = sizeof(salt);
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
 
-	/*
-	 * Calculate a salt value
-	 */
-	for (i = 0; i < SALTSIZE; i++)
-		salt[i] = chars[arc4random_uniform(sizeof(chars) - 1)];
-	salt[SALTSIZE] = '\0';
+	if (crypt_makesalt(salt, format, &salt_sz) ) {
+		if (salt_sz == sizeof(salt) ) {
+			errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
+		} else {
+			/* really shouldn't get here */
+			errx(EX_CONFIG, "Not enough space to write salt to buffer.  CRYPT_SALT_MAX_LEN is wrong.");
+		}
+	}
 
 	cryptpw = crypt(password, salt);
 	if (cryptpw == NULL)
@@ -511,8 +532,9 @@ pw_pwcrypt(char *password)
 }
 
 static char *
-pw_password(struct userconf * cnf, char const * user, bool dryrun)
+pw_password(struct userconf * cnf,  char const * user, const char * format, bool dryrun)
 {
+	static char const chars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./!@#$%^&*()-+=<>?";
 	int             i, l;
 	char            pwbuf[32];
 
@@ -543,7 +565,7 @@ pw_password(struct userconf * cnf, char const * user, bool dryrun)
 	default:
 		return "*";
 	}
-	return pw_pwcrypt(pwbuf);
+	return pw_pwcrypt(pwbuf, format);
 }
 
 static int
@@ -1198,6 +1220,7 @@ pw_user_add(int argc, char **argv, char *arg1)
 	int rc, ch, fd = -1;
 	size_t i;
 	bool dryrun, nis, pretty, quiet, createhome, precrypted, genconf;
+	char passwd_format[CRYPT_FORMAT_MAX_LEN + 1];
 
 	dryrun = nis = pretty = quiet = createhome = precrypted = false;
 	genconf = false;
@@ -1395,10 +1418,9 @@ pw_user_add(int argc, char **argv, char *arg1)
 	pwd->pw_dir = pw_homepolicy(cmdcnf, homedir, pwd->pw_name);
 	pwd->pw_shell = pw_shellpolicy(cmdcnf);
 	lc = login_getpwclass(pwd);
-	if (lc == NULL || login_setcryptfmt(lc, "sha512", NULL) == NULL)
-		warn("setting crypt(3) format");
+	copy_passwd_format(passwd_format, lc, sizeof(passwd_format));
 	login_close(lc);
-	pwd->pw_passwd = pw_password(cmdcnf, pwd->pw_name, dryrun);
+	pwd->pw_passwd = pw_password(cmdcnf, pwd->pw_name, passwd_format, dryrun);
 	if (pwd->pw_uid == 0 && strcmp(pwd->pw_name, "root") != 0)
 		warnx("WARNING: new account `%s' has a uid of 0 "
 		    "(superuser access!)", pwd->pw_name);
@@ -1525,6 +1547,7 @@ pw_user_mod(int argc, char **argv, char *arg1)
 	bool precrypted;
 	mode_t homemode = 0;
 	time_t expire_time, password_time, now;
+	char passwd_format[256];
 
 	expire_time = password_time = -1;
 	gecos = homedir = grname = name = newname = skel = shell =NULL;
@@ -1740,12 +1763,11 @@ pw_user_mod(int argc, char **argv, char *arg1)
 
 	if (passwd && conf.fd == -1) {
 		lc = login_getpwclass(pwd);
-		if (lc == NULL || login_setcryptfmt(lc, "sha512", NULL) == NULL)
-			warn("setting crypt(3) format");
+		copy_passwd_format(passwd_format, lc, sizeof(passwd_format) );
 		login_close(lc);
 		cnf->default_password = passwd_val(passwd,
 		    cnf->default_password);
-		pwd->pw_passwd = pw_password(cnf, pwd->pw_name, dryrun);
+		pwd->pw_passwd = pw_password(cnf, pwd->pw_name, passwd_format, dryrun);
 		edited = true;
 	}
 

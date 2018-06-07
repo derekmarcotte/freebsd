@@ -93,7 +93,7 @@ grp_set_passwd(struct group *grp, bool update, int fd, bool precrypted)
 			errx(EX_DATAERR, "wrong encrypted passwrd");
 		grp->gr_passwd = line;
 	} else
-		grp->gr_passwd = pw_pwcrypt(line);
+		grp->gr_passwd = pw_pwcrypt(line, "default");
 }
 
 int

@@ -569,6 +569,13 @@ If calling
 on the specifier fails,
 .Fa error
 is returned to indicate this.
+.Fn login_setcryptfmt
+and 
+.Xr crypt_set_format 3
+are both deprecated in favour of 
+.Xr login_getcapstr 3
+and 
+.Xr crypt_makesalt 3 .
 .El
 .Sh SEE ALSO
 .Xr login 1 ,

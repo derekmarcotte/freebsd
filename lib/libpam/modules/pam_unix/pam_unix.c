@@ -69,16 +69,10 @@ __FBSDID("$FreeBSD$");
 #include <security/pam_modules.h>
 #include <security/pam_mod_misc.h>
 
-#define PASSWORD_HASH		"md5"
 #define DEFAULT_WARN		(2L * 7L * 86400L)  /* Two weeks */
-#define	SALTSIZE		32
 
 #define	LOCKED_PREFIX		"*LOCKED*"
 #define	LOCKED_PREFIX_LEN	(sizeof(LOCKED_PREFIX) - 1)
-
-static void makesalt(char []);
-
-static char password_hash[] =		PASSWORD_HASH;
 
 #define PAM_OPT_LOCAL_PASS	"local_pass"
 #define PAM_OPT_NIS_PASS	"nis_pass"
@@ -276,13 +270,15 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 	struct ypclnt *ypclnt;
 	const void *yp_domain, *yp_server;
 #endif
-	char salt[SALTSIZE + 1];
+	char salt[CRYPT_SALT_MAX_LEN + 1];
+	size_t salt_sz;
 	login_cap_t *lc;
 	struct passwd *pwd, *old_pwd;
 	const char *user, *old_pass, *new_pass;
 	char *encrypted;
 	time_t passwordtime;
 	int pfd, tfd, retval;
+	const char *passwd_format;
 
 	if (openpam_get_option(pamh, PAM_OPT_AUTH_AS_SELF))
 		user = getlogin();
@@ -386,10 +382,21 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 			return (PAM_BUF_ERR);
 
 		lc = login_getclass(pwd->pw_class);
-		if (login_setcryptfmt(lc, password_hash, NULL) == NULL)
-			openpam_log(PAM_LOG_ERROR,
-			    "can't set password cipher, relying on default");
 		
+		salt_sz = sizeof(salt);
+		passwd_format = login_getcapstr(lc, "passwd_format", "", NULL);
+		if (crypt_makesalt(salt, passwd_format, &salt_sz) ) {
+			login_close(lc);
+			
+			if (salt_sz == sizeof(salt) ) {
+				PAM_LOG("Unable to create salt for crypt(3) format: %s", passwd_format);
+			} else {
+				PAM_LOG("Not enough space in buffer to create salt for format: %s. CRYPT_SALT_MAX_LEN is wrong. Buffer size: %zu, required: %zu", passwd_format, sizeof(salt), salt_sz);
+			}
+			
+			return (PAM_SERVICE_ERR);
+		}
+				
 		/* set password expiry date */
 		pwd->pw_change = 0;
 		passwordtime = login_getcaptime(lc, "passwordtime", 0, 0);
@@ -397,7 +404,6 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 			pwd->pw_change = time(NULL) + passwordtime;
 		
 		login_close(lc);
-		makesalt(salt);
 		pwd->pw_passwd = crypt(new_pass, salt);
 #ifdef YP
 		switch (old_pwd->pw_fields & _PWF_SOURCE) {
@@ -451,35 +457,6 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 	}
 
 	return (retval);
-}
-
-/* Mostly stolen from passwd(1)'s local_passwd.c - markm */
-
-static unsigned char itoa64[] =		/* 0 ... 63 => ascii - 64 */
-	"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-static void
-to64(char *s, long v, int n)
-{
-	while (--n >= 0) {
-		*s++ = itoa64[v&0x3f];
-		v >>= 6;
-	}
-}
-
-/* Salt suitable for traditional DES and MD5 */
-static void
-makesalt(char salt[SALTSIZE + 1])
-{
-	int i;
-
-	/* These are not really random numbers, they are just
-	 * numbers that change to thwart construction of a
-	 * dictionary.
-	 */
-	for (i = 0; i < SALTSIZE; i += 4)
-		to64(&salt[i], arc4random(), 4);
-	salt[SALTSIZE] = '\0';
 }
 
 PAM_MODULE_ENTRY("pam_unix");
