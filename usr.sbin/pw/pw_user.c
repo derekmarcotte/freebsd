@@ -508,10 +508,10 @@ pw_shellpolicy(struct userconf * cnf)
 char           *
 pw_pwcrypt(const char *password, const char *format)
 {
+	int		i;
 	char		*salt;
 	size_t		salt_sz;
 	int		salt_err;
-	int		i;
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
@@ -548,6 +548,7 @@ pw_pwcrypt(const char *password, const char *format)
 	}
 
 	cryptpw = crypt(password, salt);
+	free(salt);
 	if (cryptpw == NULL)
 		errx(EX_CONFIG, "crypt(3) failure");
 	pwlen = strlcpy(buf, cryptpw, sizeof(buf));

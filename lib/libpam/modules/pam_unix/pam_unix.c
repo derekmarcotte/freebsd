@@ -271,10 +271,10 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 	struct ypclnt *ypclnt;
 	const void *yp_domain, *yp_server;
 #endif
+	int i;
 	char *salt;
 	size_t salt_sz;
 	int salt_err;
-	int i;
 	login_cap_t *lc;
 	struct passwd *pwd, *old_pwd;
 	const char *user, *old_pass, *new_pass;
@@ -428,6 +428,7 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 		
 		login_close(lc);
 		pwd->pw_passwd = crypt(new_pass, salt);
+		free(salt);
 #ifdef YP
 		switch (old_pwd->pw_fields & _PWF_SOURCE) {
 		case _PWF_FILES:
