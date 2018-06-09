@@ -508,13 +508,42 @@ pw_shellpolicy(struct userconf * cnf)
 char           *
 pw_pwcrypt(const char *password, const char *format)
 {
-	char            salt[256];
-	size_t		salt_sz = sizeof(salt);
+	char		*salt;
+	size_t		salt_sz;
+	int		salt_err;
+	int		i;
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
 
-	if (crypt_makesalt(salt, format, &salt_sz) ) {
+	salt_err = 0;
+	salt_sz = 64 * sizeof(char);
+	/* We might need more memory than we guessed at initialization.
+	 * Let's retry up to one time with new information.
+	 */
+	for (i = 0; i < 2 && salt_err == 0; i++ ) {
+		if ((salt = malloc(salt_sz)) == NULL) {
+			errx(EX_UNAVAILABLE, "out of memory");
+		}
+
+		salt_err = crypt_makesalt(salt, format, &salt_sz);
+		switch(salt_err) {
+		case ENOMEM:
+			/* Try allocating a larger amount if this is
+			 * the first time trying.
+			 */
+			if (i == 0)
+				salt_err = 0;
+
+			free(salt);
+			break;
+		case EINVAL:
+			/* Will terminate loop */
+			break;
+		}
+	}
+
+	if (salt_err != 0) {
 		errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
 	}
 

@@ -34,12 +34,13 @@ __FBSDID("$FreeBSD$");
 #include <sys/types.h>
 #include <sys/param.h>
 
+#include <errno.h>
 #include <libutil.h>
-#include <string.h>
-#include <unistd.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "crypt.h"
 
@@ -60,7 +61,7 @@ static const struct crypt_format {
 	const char *const format_regex;
 	
 	const uint8_t salt_bytes;
-	const bool salt_trailing_sign;	/* do we tack on a $ at the end of the salt */
+	const bool salt_trailing_sign;	/* Do we tack on a $ at the end of the salt */
 } crypt_formats[] = {
 	{ "md5",	crypt_md5,	"$1$",	"$1$",		"^\\$1\\$$",				8,	true	},
 	{ "sha512",	crypt_sha512,	"$6$",	"$6$",		"^\\$6\\$(rounds=[0-9]{0,9}\\$)?$",	16,	true	},
@@ -74,18 +75,18 @@ static const struct crypt_format {
 	{ "nth",	crypt_nthash,	"$3$",	"$3$",		"^\\$3\\$$",				0,	false	},
 	{ "sha256",	crypt_sha256,	"$5$",	"$5$",		"^\\$5\\$(rounds=[0-9]{0,9}\\$)?$",	16,	true	},
 	
-	/* sentinel */
+	/* Sentinel */
 	{ NULL,		NULL,		NULL,	NULL,		NULL,	0,	NULL	}
 };
 
 #ifdef HAS_DES
-/* must be des if system has des */
+/* Must be des if system has des. */
 static char default_format[256] = "des";
 #else 
 static char default_format[256] = "sha512";
 #endif
 
-/* local-scope only */
+/* Local-scope only. */
 static const struct crypt_format *crypt_find_format(const char *);
 static bool crypt_validate_format_regex(const char *, const char *);
 static bool crypt_format_is_modular(const char*);
@@ -110,19 +111,20 @@ crypt_makesalt(char *out, const char *format, size_t *outlen)
 	const char *prefix;
 	size_t prefix_len;
 	
-	/* diff really is a size, but keeping it api compatible with b64_from_24bit.  
-	 * Only up to 4 bytes anyways, shouldn't be a problem, right? 
+	/* Diff really is a size, but keeping it api compatible with
+	 * b64_from_24bit.  Only up to 4 bytes anyways, shouldn't be a problem,
+	 * right?
 	 */
 	int diff;
 	unsigned int i;
 	
-	/* find the appropriate format entry */
+	/* Find the appropriate format entry. */
 	cf = crypt_find_format(format);
-	if (cf == NULL )
-		return (-1);
+	if (cf == NULL)
+		return (EINVAL);
 	
-	/* calculate required output size */
-	if (crypt_format_is_modular(format) ) {
+	/* Calculate required output size. */
+	if (crypt_format_is_modular(format)) {
 		prefix = format;
 	} else {
 		prefix = cf->default_format;
@@ -133,16 +135,18 @@ crypt_makesalt(char *out, const char *format, size_t *outlen)
 	if (cf->salt_trailing_sign)
 		reqsz++;
 	
-	/* trailing '\0' */
+	/* Trailing '\0' */
 	reqsz++;
 	
-	/* does the output buff have enough */
+	/* Does the output buffer have enough. */
 	if (reqsz > *outlen) {
 		*outlen = reqsz;
-		return (-2);
+		return (ENOMEM);
 	}
 	
-	/* start building our output */
+	/* Start building our output. strncpy will fill the remaining buffer
+	 * with zeros.  We know we have enough due to reqsz calulation above.
+	 */
 	strncpy(out, prefix, *outlen);
 	out += prefix_len;
 	
@@ -153,15 +157,17 @@ crypt_makesalt(char *out, const char *format, size_t *outlen)
 		b64_from_24bit(rand_buf[2], rand_buf[1], rand_buf[0], diff, &out);
 	}
 	
-	/* cleanup */
-	bzero(rand_buf, sizeof(rand_buf) );
+	/* Cleanup random buffer. */
+	explicit_bzero(rand_buf, sizeof(rand_buf) );
 	
 	if (cf->salt_trailing_sign) {
 		out[0] = '$';
 		out++;
 	}
 	
-	/* don't need to add trailing '\0', strncpy above will have set it already */
+	/* Don't need to add trailing '\0', strncpy above will have set it
+	 * already.
+	 */
 	return (0);
 }
 
@@ -171,7 +177,8 @@ crypt_makesalt(char *out, const char *format, size_t *outlen)
 const char *
 crypt_get_format(void)
 {
-	return default_format;
+
+	return (default_format);
 }
 
 /*
@@ -180,6 +187,7 @@ crypt_get_format(void)
 int
 crypt_set_format(const char *format)
 {
+
 	if (crypt_find_format(format) == NULL) {
 		return (0);
 	}
@@ -201,27 +209,31 @@ crypt_format_validate_regex(const char* regex, const char *format)
 	 * called often.
 	 */
 	if (regcomp(&regex_c, regex, REG_EXTENDED) != 0) {
-		return false;
+		return (false);
 	}
 	
 	res = regexec(&regex_c, format, 0, NULL, 0);
 	regfree(&regex_c);
 	
-	return !res;
+	return (!res);
 }
 
 /*
- * is the crypt format a fancy-dancy modular format
+ * Is the crypt format a fancy-dancy modular format.
  */
 static bool
 crypt_format_is_modular(const char* format) 
 {
-	/* we'll treat 'new des' as modular, because they can set 24 bits of count via salt */
+
+	/* We'll treat 'new des' as modular, because they can set 24 bits of
+	 * count via salt.
+	 */
 	return (format[0] == '$' || format[0] == '_');
 }
 
 /*
- * lookup our format in our internal table for a matching crypt_format structure
+ * Lookup our format in our internal table for a matching crypt_format
+ * structure.
  */
 static const struct crypt_format *
 crypt_find_format(const char *format)
@@ -235,20 +247,22 @@ crypt_find_format(const char *format)
 	if (crypt_format_is_modular(format) ) {
 		/* modular crypt magic lookup, force full syntax */
 		for (cf = crypt_formats; cf->name != NULL; ++cf) {
-			if (cf->magic != NULL && strstr(format, cf->magic) == format && crypt_format_validate_regex(cf->format_regex, format) ) {
-				return cf;
+			if (cf->magic != NULL &&
+			    strstr(format, cf->magic) == format &&
+			    crypt_format_validate_regex(cf->format_regex, format) ) {
+				return (cf);
 			}
 		}
 	} else {
 		/* name lookup */
 		for (cf = crypt_formats; cf->name != NULL; ++cf) {
 			if (strcasecmp(cf->name, format) == 0) {
-				return cf;
+				return (cf);
 			}
 		}
 	}
 	
-	return NULL;
+	return (NULL);
 }
 
 /*
@@ -265,14 +279,14 @@ crypt_r(const char *passwd, const char *salt, struct crypt_data *data)
 	int len;
 #endif
 	
-	/* use the magic in the salt for lookup */
+	/* Use the magic in the salt for lookup. */
 	for (cf = crypt_formats; cf->name != NULL; ++cf)
 		if (cf->magic != NULL && strstr(salt, cf->magic) == salt) {
 			func = cf->func;
 			goto match;
 		}
 #ifdef HAS_DES
-	/* check if it's standard des */
+	/* Check if it's standard des. */
 	len = strlen(salt);
 	if ((len == 13 || len == 2) && strspn(salt, DES_SALT_ALPHABET) == len) {
 		func = crypt_des;
