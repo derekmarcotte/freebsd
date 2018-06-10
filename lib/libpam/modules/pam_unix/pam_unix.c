@@ -387,12 +387,13 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 		lc = login_getclass(pwd->pw_class);
 		passwd_format = login_getcapstr(lc, "passwd_format", "", NULL);
 
+		salt = NULL;
 		salt_err = 0;
 		salt_sz = 64 * sizeof(char);
 		/* We might need more memory than we guessed at initialization.
 		 * Let's retry up to one time with new information.
 		 */
-		for (i = 0; i < 2 && salt_err == 0; i++ ) {
+		for (i = 0; i < 2 && salt_err == 0 && salt == NULL; i++ ) {
 			if ((salt = malloc(salt_sz)) == NULL) {
 				return (PAM_BUF_ERR);
 			}
@@ -406,15 +407,17 @@ pam_sm_chauthtok(pam_handle_t *pamh, int flags,
 				if (i == 0)
 					salt_err = 0;
 
-				free(salt);
-				break;
+				/* Fallthrough */
 			case EINVAL:
-				/* terminate loop */
+				/* Terminate loop with salt_err */
+				free(salt);
+				salt = NULL;
+
 				break;
 			}
 		}
 
-		if (salt_err != 0) {
+		if (salt == NULL) {
 			login_close(lc);
 			PAM_LOG("Unable to create salt for crypt(3) format: %s", passwd_format);
 			return (PAM_SERVICE_ERR);

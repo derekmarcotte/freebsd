@@ -516,12 +516,13 @@ pw_pwcrypt(const char *password, const char *format)
 	static char     buf[256];
 	size_t		pwlen;
 
+	salt = NULL;
 	salt_err = 0;
 	salt_sz = 64 * sizeof(char);
 	/* We might need more memory than we guessed at initialization.
 	 * Let's retry up to one time with new information.
 	 */
-	for (i = 0; i < 2 && salt_err == 0; i++ ) {
+	for (i = 0; i < 2 && salt_err == 0 && salt == NULL; i++ ) {
 		if ((salt = malloc(salt_sz)) == NULL) {
 			errx(EX_UNAVAILABLE, "out of memory");
 		}
@@ -530,20 +531,22 @@ pw_pwcrypt(const char *password, const char *format)
 		switch(salt_err) {
 		case ENOMEM:
 			/* Try allocating a larger amount if this is
-			 * the first time trying.
+			 * the first time trying
 			 */
 			if (i == 0)
 				salt_err = 0;
 
-			free(salt);
-			break;
+			/* Fallthrough */
 		case EINVAL:
-			/* Will terminate loop */
+			/* Terminate loop with salt_err */
+			free(salt);
+			salt = NULL;
+
 			break;
 		}
 	}
 
-	if (salt_err != 0) {
+	if (salt == NULL) {
 		errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
 	}
 
