@@ -30,7 +30,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd August 10, 2016
+.Dd July 31, 2018
 .Dt CRYPT 3
 .Os
 .Sh NAME
@@ -54,221 +54,250 @@
 .Ft "int"
 .Fn crypt_set_format "const char *string"
 .Sh DESCRIPTION
-The 
-.Nm libcrypt 
-library covers functions related to password hashing.  
+The
+.Nm libcrypt
+library covers functions related to password hashing.
 .Pp
-Password hashing is different than a standard one way hash function.  Password hashing tries to make it difficult to recover a low-entropy key 
-.Pq e.g. a typed password
-from the resultant output hash.  Offline recovery by exhaustive key search 
+Password hashing is different than a standard one way hash function.
+Password hashing tries to make it difficult to recover a low-entropy key
+.Pq e.g., a typed password
+from the resultant output hash.
+Offline recovery by exhaustive key search
 .Pq brute-force and dictionary attacks
-is stymied by the password hashing being one-way, and often computationally expensive.  Different algorithms can be selected to produce the password hash, with varying ability to effectively deter key search attempts.
+is stymied by the password hashing being one-way, and often computationally expensive.
+Different algorithms can be selected to produce the password hash, with varying ability to effectively deter key search attempts.
 .Pp
-The hashing algorithm to be used for an invocation of crypt is chosen by supplying a salt parameter of a particular format.  The algorithms currently supported are: 
-.Sx bcrypt , 
-.Sx sha512-crypt , 
-.Sx sha256-crypt , 
-.Sx md5-crypt , 
-.Sx DES Extended Format , 
-.Sx Traditional DES Format , 
-and 
+The hashing algorithm to be used for an invocation of crypt is chosen by supplying a salt parameter of a particular format.
+The algorithms currently supported are:
+.Sx bcrypt ,
+.Sx sha512-crypt ,
+.Sx sha256-crypt ,
+.Sx md5-crypt ,
+.Sx DES Extended Format ,
+.Sx Traditional DES Format ,
+and
 .Sx NT-Hash .
 .Pp
-Current computational capabilities make all but the bcrypt and sha-crypt families known to be susceptible to exhaustive key searches.  The tuneable work factor of the bcrypt and sha-crypt families has allowed them to be set to be more computationally intensive over time.  The use of the other families is not recommended at this time, but are maintained for legacy compatibility.
+Current computational capabilities make all but the bcrypt and sha-crypt families known to be susceptible to exhaustive key searches.
+The tune-able work factor of the bcrypt and sha-crypt families has allowed them to be set to be more computationally intensive over time.
+The use of the other families is not recommended at this time, but are maintained for legacy compatibility.
 .Pp
-The first argument to 
-.Fn crypt 
-is the 
-.Fa key 
-to hash 
-.Pq usually a password , 
-as a NUL-terminated string.  The second is the 
-.Fa salt .  
-A salt is a random value that assists in complicating offline recovery.  The length and format of the salt, and how it will be used is algorithm dependent.  For best results, specify at least sixteen characters of salt.
+The first argument to
+.Fn crypt
+is the
+.Fa key
+to hash
+.Pq usually a password ,
+as a NUL-terminated string.
+The second is the
+.Fa salt .
+A salt is a random value that assists in complicating offline recovery.
+The length and format of the salt, and how it will be used is algorithm dependent.
+For best results, specify at least sixteen characters of salt.
 .Pp
-If the salt begins with the string 
-.Qq $digit , 
-then the 
-.Sx Modular Crypt Format 
-is used.  If it begins with an underscore 
-.Qq _ , 
-then the 
-.Sx DES Extended Format 
-is used.  If the salt is 2 or 13 characters and includes only 0-9, a-z, A-Z a dot . or a slash /, then 
-.Sx Traditional DES Format 
-is used.  If none of these conditions are true, crypt will use the default hash function set by crypt_set_format, 
+If the salt begins with the string
+.Qq $digit ,
+then the
+.Sx Modular Crypt Format
+is used.
+If it begins with an underscore
+.Qq _ ,
+then the
+.Sx DES Extended Format
+is used.
+If the salt is 2 or 13 characters and includes only 0-9, a-z, A-Z a dot . or a slash /, then
+.Sx Traditional DES Format
+is used.
+If none of these conditions are true, crypt will use the default hash function set by crypt_set_format,
 .Pq or Traditional DES Format if no default has been set, for systems with DES support .
 .Pp
-The 
+The
 .Fn crypt_makesalt
-function populates an 
-.Fa output 
-buffer with a newly generated salt for the specified valid 
-.Fa format .  
-The size of the pre-allocated buffer is passed via 
+function populates an
+.Fa output
+buffer with a newly generated salt for the specified valid
+.Fa format .
+The size of the pre-allocated buffer is passed via
 .Fa out_len .
-If the output buffer is too small, the required size is set in 
+If the output buffer is too small, the required size is set in
 .Fa out_len .
 .Pp
-The 
+The
 .Fn crypt_get_format
-function returns a constant string that represents the name of the algorithm set as the default.  Its use is deprecated.
+function returns a constant string that represents the name of the algorithm set as the default.
+Its use is deprecated.
 .Pp
-The 
+The
 .Fn crypt_set_format
-function sets the default encoding 
-.Fa format 
-according to the supplied string.  Its use is deprecated.
+function sets the default encoding
+.Fa format
+according to the supplied string.
+Its use is deprecated.
 .Pp
 The salts, formats, and algorithms are outlined below.
-
 .Sh Modular Crypt Format
-.Pp
-Modular Crypt Format is the current standard way to describe which algorithm and parameters to use for a particular crypt invocation.  Salts that are prefixed with $digit are using the modular crypt format.  The prefix selects the algorithm to use.  Valid prefixes are:
+Modular Crypt Format is the current standard way to describe which algorithm and parameters to use for a particular crypt invocation.
+Salts that are prefixed with $digit are using the modular crypt format.
+The prefix selects the algorithm to use.
+Valid prefixes are:
 .Bl -column -offset indent ".Sy Prefix" ".Sy Algorithm"
 .It Sy Prefix Ta Sy Algorithm
-.It Li $1$       Ta 
+.It Li $1$       Ta
 .Sx md5-crypt
-.It Li $2        Ta 
+.It Li $2        Ta
 .Sx bcrypt
-.It Li $3$       Ta 
+.It Li $3$       Ta
 .Sx NT-Hash
-.It Li $5$       Ta 
+.It Li $5$       Ta
 .Sx sha256-crypt
-.It Li $6$       Ta 
+.It Li $6$       Ta
 .Sx sha512-crypt
 .El
 .Pp
-Everything following the prefix in the salt parameter is algorithm dependant, but includes things like work factor, and an actual salt 
+Everything following the prefix in the salt parameter is algorithm dependent, but includes things like work factor, and an actual salt
 .Pq random value for that particular invocation .
-
 .Ss md5-crypt
 .Bl -column ".Sy Output Hash Example:" ".Sy 8 characters from the set [a-zA-Z0-9./]"
-.It Li Format Strings:  Ta $1$, md5
-.It Li Salt Format:     Ta 8 characters from the set [a-zA-Z0-9./]
-.It Li Full Salt Example:       Ta $1$deadbeef$
-.It Li Output Hash Example:     Ta $1$deadbeef$0Huu6KHrKLVWfqa4WljDE0
+.It Li Format Strings :  Ta $1$, md5
+.It Li Salt Format :      Ta 8 characters from the set [a-zA-Z0-9./]
+.It Li Full Salt Example :       Ta $1$deadbeef$
+.It Li Output Hash Example :     Ta $1$deadbeef$0Huu6KHrKLVWfqa4WljDE0
 .El
 .Pp
-md5-crypt was the default crypt format in FreeBSD for many years, developed by Poul-Henning Kamp.  
+md5-crypt was the default crypt format in
+.Fx for many years, developed by Poul-Henning Kamp.
 .Pp
-It has seen widespread use in many commercial products, and for a long time was good enough.  It has a fixed work factor, which means that as computers became faster, the ability to attack it has increased proportionally.
+It has seen widespread use in many commercial products, and for a long time was good enough.
+It has a fixed work factor, which means that as computers became faster, the ability to attack it has increased proportionally.
 .Pp
 Its use is no longer recommended.
-
 .Ss bcrypt
-.Bl -column ".Sy Output Hash Example:" ".Sy $2a$05$CCCCCCCCCCCCCCCCCCCCC.VGOzA784oUp/Z0DY336zx7pLYAy0lwK"
-.It Li Format Strings:  Ta $2$[rounds]$, $2a$[rounds]$, $2b$[rounds]$, blf
-.It Li Salt Format:     Ta 16 bytes then base-64 encoded from the set [a-zA-Z0-9./]
-.It Li Full Salt Example:       Ta $2a$05$CCCCCCCCCCCCCCCCCCCCC.
-.It Li Output Hash Example:     Ta $2a$05$CCCCCCCCCCCCCCCCCCCCC.VGOzA784oUp/Z0DY336zx7pLYAy0lwK
+.Bl -column ".Sy Output Hash Example:" ".Sy $2b$08$CCCCCCCCCCCCCCCCCCCCC.HB0zhI4CA576EzokBu6usBUNIQZK6KS"
+.It Li Format Strings :  Ta $2$[rounds]$, $2a$[rounds]$, $2b$[rounds]$, blf
+.It Li Salt Format :     Ta 16 bytes then base-64 encoded from the set [a-zA-Z0-9./]
+.It Li Full Salt Example :       Ta $2b$08$CCCCCCCCCCCCCCCCCCCCC.
+.It Li Output Hash Example :     Ta $2b$08$CCCCCCCCCCCCCCCCCCCCC.HB0zhI4CA576EzokBu6usBUNIQZK6KS
 .El
 .Pp
-bcrypt is the first algorithm to support a tuneable work factor.  It was initially introduced in OpenBSD, by Niels Provos, based on the Usenix paper "A Future-Adaptable Password Scheme" by Niels Provos and David Mazi\(`eres. 
+bcrypt is the first algorithm to support a tuneable work factor.
+It was initially introduced in
+.Ox , by Niels Provos, based on the Usenix paper "A Future-Adaptable Password Scheme" by Niels Provos and David Mazi\(`eres.
 .Pp
-There are three variations supported, each with minor bug fixes.  2b is the recommended variation.  
+There are three variations supported, each with minor bug fixes.
+2b is the recommended variation.
 .Pp
-The work factor is specified by the rounds parameter in the format string.  These rounds are logarithmic.  That is, 
-.Qq $2b$08$ 
-will take approximately twice as long as 
-.Qq $2b$07$ 
-for the same salt and key.  04 is the lowest supported work factor, and 31 is the highest.
+The work factor is specified by the rounds parameter in the format string.
+These rounds are logarithmic.
+That is,
+.Qq $2b$08$
+will take approximately twice as long as
+.Qq $2b$07$
+for the same salt and key.
+04 is the lowest supported work factor, and 31 is the highest.
 .Pp
-When the format string 
-.Qq blf 
-is specified, it is equivalent to specifying 
+When the format string
+.Qq blf
+is specified, it is equivalent to specifying
 .Qq $2b$04$ .
-
 .Ss NT-Hash
 .Bl -column ".Sy Output Hash Example:" ".Sy $3$sdlksjfdlksjdlfk"
-.It Li Format Strings:  Ta $3$, nth
-.It Li Salt Format:  Ta no salt
-.It Li Full Salt Example:  Ta $3$
-.It Li Output Hash Example:  Ta $3$$cc0fb8a290eebbfe74e7207f2ace5927
+.It Li Format Strings :  Ta $3$, nth
+.It Li Salt Format :  Ta no salt
+.It Li Full Salt Example :  Ta $3$
+.It Li Output Hash Example :  Ta $3$$cc0fb8a290eebbfe74e7207f2ace5927
 .El
 .Pp
-nt-hash is supported for compatibility reasons only.  It is strongly discouraged for any production uses.
-
+nt-hash is supported for compatibility reasons only.
+It is strongly discouraged for any production uses.
 .Ss sha256-crypt
 .Bl -column ".Sy Output Hash Example:" ".Sy $5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5, $5$rounds=10000$saltstringsaltst$3xv.VbSHBb41AL9AvLeujZkZRBAwqFMz2.opqey6IcA "
-.It Li Format Strings:  Ta $5$, $5$rounds=[rounds]$, sha256
-.It Li Salt Format:     Ta 16 characters from the set [a-zA-Z0-9./]
-.It Li Full Salt Examples:      Ta $5$saltstring$, $5$rounds=10000$saltstringsaltst$
-.It Li Output Hash Examples:     Ta $5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5, $5$rounds=10000$saltstringsaltst$3xv.VbSHBb41AL9AvLeujZkZRBAwqFMz2.opqey6IcA 
+.It Li Format Strings :  Ta $5$, $5$rounds=[rounds]$, sha256
+.It Li Salt Format :     Ta 16 characters from the set [a-zA-Z0-9./]
+.It Li Full Salt Examples :      Ta $5$saltstring$, $5$rounds=10000$saltstringsaltst$
+.It Li Output Hash Examples :     Ta $5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5, $5$rounds=10000$saltstringsaltst$3xv.VbSHBb41AL9AvLeujZkZRBAwqFMz2.opqey6IcA
 .El
 .Pp
-sha256 supports a tunable work factor.  It was developed by Ulrich Drepper of Red Hat, and is detailed in 
+sha256 supports a tunable work factor.
+It was developed by Ulrich Drepper of Red Hat, and is detailed in
 .Qq Unix crypt using SHA-256 and SHA-512 .
 .Pp
 From that document:
 .Pp
 .Qo
-Security departments in companies are trying to phase out all uses of MD5.  They demand a method which is officially sanctioned.  For US-based users this means tested by the NIST.
+Security departments in companies are trying to phase out all uses of MD5.
+They demand a method which is officially sanctioned.
+For US-based users this means tested by the NIST.
 .Pp
-This rules out the use of another already implemented method with limited spread: the use of the Blowfish encryption method.  The choice comes down to tested encryption 
+This rules out the use of another already implemented method with limited spread: the use of the Blowfish encryption method.
+The choice comes down to tested encryption
 .Pq 3DES, AES
-or hash sums 
+or hash sums
 .Pq the SHA family .
 .Qc
 .Pp
-The prepositions in the above statement are misleading.  Blowfish as a primitive, like 3DES or AES, has stood up to years of scrutinty by the cryptographic communinty.  bcrypt, the password hashing function, is ubiquitous.  It also currently provides greater resilience against pipe-lined or GPU-based attacks for the approximate same CPU workload as the sha-crypt family, based on its limited memory requirements.  This is not expected to remain true with future improvements to GPUs.  An additional subtle difference between bcrypt and the sha families is that bcrypt's salt is 2^128 bits, while the sha family is 2^96 bits.
+The prepositions in the above statement are misleading.
+Blowfish as a primitive, like 3DES or AES, has stood up to years of scrutinty by the cryptographic communinty.
+bcrypt, the password hashing function, is ubiquitous.
+It also currently provides greater resilience against pipe-lined or GPU-based attacks for the approximate same CPU workload as the sha-crypt family, based on its limited memory requirements.
+This is not expected to remain true with future improvements to GPUs.
+An additional subtle difference between bcrypt and the sha families is that bcrypt's salt is 2^128 bits, while the sha family is 2^96 bits.
 .Pp
 If you require a algorithm that includes NIST sanctioned primitives, choose one of the sha-crypt methods.
 .Pp
-The work factor is specified by the rounds parameter in the format string.  These rounds are linear.  That is, 
-.Qq $5$rounds=20000$ 
-will take approximately twice as long as 
-.Qq $5$rounds=10000$ 
-for the same salt and key. 1000 is the minimum number of rounds, 999999999 is the maximum.
+The work factor is specified by the rounds parameter in the format string.
+These rounds are linear.
+That is,
+.Qq $5$rounds=20000$
+will take approximately twice as long as
+.Qq $5$rounds=10000$
+for the same salt and key.
+1000 is the minimum number of rounds, 999999999 is the maximum.
 .Pp
-When the format string 
+When the format string
 .Qq sha256 ,
-or 
-.Qq $5$ 
-is specified, it is equivalent to specifying 
+or
+.Qq $5$
+is specified, it is equivalent to specifying
 .Qq $5$rounds=5000$ .
-
-
 .Ss sha512-crypt
 .Bl -column ".Sy Output Hash Example:" ".Sy $6$saltstring$svn8UoSVapNtMuq1ukKS4tPQd8iKwSMHWjl/O817G3uBnIFNjnQJuesI68u4OTLiBFdcbYEdFCoEOfaS35inz1, $6$rounds=10000$saltstringsaltst$OW1/O6BYHV6BcXZu8QVeXbDWra3Oeqh0sbHbbMCVNSnCM/UrjmM0Dp8vOuZeHBy/YTBmSK6H9qs/y3RnOaw5v."
-.It Li Format Strings:  Ta $6$, $6$rounds=[rounds]$, sha512
-.It Li Salt Format:     Ta 16 characters from the set [a-zA-Z0-9./]
-.It Li Full Salt Examples:      Ta $6$saltstring$, $6$rounds=10000$saltstringsaltst$
-.It Li Output Hash Examples:     Ta $6$saltstring$svn8UoSVapNtMuq1ukKS4tPQd8iKwSMHWjl/O817G3uBnIFNjnQJuesI68u4OTLiBFdcbYEdFCoEOfaS35inz1, $6$rounds=10000$saltstringsaltst$OW1/O6BYHV6BcXZu8QVeXbDWra3Oeqh0sbHbbMCVNSnCM/UrjmM0Dp8vOuZeHBy/YTBmSK6H9qs/y3RnOaw5v. 
+.It Li Format Strings :  Ta $6$, $6$rounds=[rounds]$, sha512
+.It Li Salt Format :     Ta 16 characters from the set [a-zA-Z0-9./]
+.It Li Full Salt Examples :      Ta $6$saltstring$, $6$rounds=10000$saltstringsaltst$
+.It Li Output Hash Examples :     Ta $6$saltstring$svn8UoSVapNtMuq1ukKS4tPQd8iKwSMHWjl/O817G3uBnIFNjnQJuesI68u4OTLiBFdcbYEdFCoEOfaS35inz1, $6$rounds=10000$saltstringsaltst$OW1/O6BYHV6BcXZu8QVeXbDWra3Oeqh0sbHbbMCVNSnCM/UrjmM0Dp8vOuZeHBy/YTBmSK6H9qs/y3RnOaw5v.
 .El
-sha512 is nearly equivalent to sha256, except that it uses SHA512 as a primitive.  See Unix crypt using SHA-256 and SHA-512 for more details.
-
+sha512 is nearly equivalent to sha256, except that it uses SHA512 as a primitive.
+See Unix crypt using SHA-256 and SHA-512 for more details.
 The details provided in sha256 apply here as well.
-
-When the format string 
-.Qq sha512 , 
-or 
-.Qq $6$ 
-is specified, it is equivalent to specifying 
+When the format string
+.Qq sha512 ,
+or
+.Qq $6$
+is specified, it is equivalent to specifying
 .Qq $6$rounds=5000$ .
-
-.Sh DES Extended Format:
-.Pp
-The key is divided into groups of 8 characters 
-.Pq the last group is NUL-padded 
-and the low-order 7 bits of each character 
+.Sh DES Extended Format
+The key is divided into groups of 8 characters
+.Pq the last group is NUL-padded
+and the low-order 7 bits of each character
 .Pq 56 bits per group
-are used to form the DES key as follows: the first group of 56 bits becomes the initial DES key.  For each additional group, the XOR of the encryption of the current DES key with itself and the group bits becomes the next DES key.
+are used to form the DES key as follows: the first group of 56 bits becomes the initial DES key.
+For each additional group, the XOR of the encryption of the current DES key with itself and the group bits becomes the next DES key.
 .Pp
-The salt is a 9-character array consisting of an underscore followed by 4 bytes of iteration count and 4 bytes of salt.  These are encoded as printable characters, 6 bits per character, least significant character first.  The values 0 to 63 are encoded as 
-.Qq ./0-9A-Za-z .  
+The salt is a 9-character array consisting of an underscore followed by 4 bytes of iteration count and 4 bytes of salt.
+These are encoded as printable characters, 6 bits per character, least significant character first.
+The values 0 to 63 are encoded as
+.Qq ./0-9A-Za-z .
 This allows 24 bits for both count and salt.
 .Pp
-The salt introduces disorder in the DES algorithm in one of 16777216 or 4096 possible ways 
+The salt introduces disorder in the DES algorithm in one of 16777216 or 4096 possible ways
 .Pq i.e., with 24 or 12 bits: if bit i of the salt is set, then bits i and i+24 are swapped in the DES E-box output .
 .Pp
-The DES key is used to encrypt a 64-bit constant using count iterations of DES.  The value returned is a NUL-terminated string, 20 or 13 bytes 
+The DES key is used to encrypt a 64-bit constant using count iterations of DES.
+The value returned is a NUL-terminated string, 20 or 13 bytes
 .Pq plus NUL
 in length, consisting of the salt followed by the encoded 64-bit encryption.
-
-.Sh Traditional DES Format:
-.Pp
-The algorithm used will depend upon whether 
+.Sh Traditional DES Format
+The algorithm used will depend upon whether
 .Fn crypt_set_format
 function sets the default encoding format according to the supplied
 .Fa string .
@@ -281,147 +310,113 @@ except that the resulting string is stored in
 .Fa data ,
 making it thread-safe.
 .Sh RETURN VALUES
-.Pp
-The 
+The
 .Fn crypt
 and
 .Fn crypt_r
 functions return a pointer to the encrypted value on success, and NULL on
 failure.
-Note: this is not a standard behaviour, AT&T
+Note: this is not a standard behavior, AT&T
 .Fn crypt
 will always return a pointer to a string.
 .Pp
 The
 .Fn crypt_makesalt
-function will return a 0 on success, or non-zero on failure.  It may fail in one of two
-ways.  If 
+function will return a 0 on success, or non-zero on failure.
+It may fail in one of two ways.
+If
 .Fa out_len
 has changed, the
 .Fa output
-buffer was not large enough to store the salt.  The required size will be stored
-in
+buffer was not large enough to store the salt.
+The required size will be stored in
 .Fa out_len .
 If
-.Fa out_len 
+.Fa out_len
 has not changed, then the
 .Fa format
-passed was invalid.  
+passed was invalid.
 .Pp
-The 
+The
 .Fn crypt_set_format
-function will return 1 if the supplied encoding format was valid.  Otherwise, a value of 0 is returned.
-
-     
+function will return 1 if the supplied encoding format was valid.
+Otherwise, a value of 0 is returned.
 .Sh EXAMPLES
 .Bd -literal
 #include <stdio.h>
 #include <string.h>
-#include <pthread.h>
-
-#include <pwd.h>
 #include <unistd.h>
 
-#include <sys/param.h>
-
-int
-main()
+int main(void)
 {
-	char *global_static_buffer;
-	char final[_PASSWORD_LEN + 1];
-	char test[_PASSWORD_LEN + 1];
+	struct crypt_data buf1, buf2;
+	char *hash, *check;
 	char salt[256];
 	size_t salt_sz = sizeof(salt);
 
-	int exit_code = 0;
-
-	/* threaded implementations should use a mutex around crypt */
-	pthread_mutex_t mtx;
-	if (pthread_mutex_init(&mtx, NULL) ) {
-		exit_code = 1;
-		goto exit1;
-	}
-
-	if (crypt_makesalt(salt, "$2b$08$", &salt_sz) ) {
-		if ( salt_sz != sizeof(salt) ) {
-			printf("Destination buffer too small for algorithm salt\\n");
-			exit_code = 2;
-			goto exit;
+	/* Generate a salt for a crypt format specification. */
+	if (crypt_makesalt(salt, "$2b$08$", &salt_sz)) {
+		if (salt_sz != sizeof(salt)) {
+			printf("Buffer too small for format salt.\\n");
+			return (1);
 		}
 
-		printf("Invalid format specified\\n");
-		exit_code = 3;
-		goto exit;
+		printf("Invalid format specified.\\n");
+		return (2);
 	}
+
 	printf("crypt_makesalt result: %s\\n", salt);
 
 	/*
-	 * Generate a crypt for storage
+	 * Generate a crypt for storage, using salt as the algorithm selection
+	 * and parameters.
 	 */
-
-	/* crypt buffer is global static */
-	pthread_mutex_lock(&mtx);
-	global_static_buffer = crypt("you'll never guess me!", salt);
-	strncpy(final, global_static_buffer, sizeof(final) );
-	pthread_mutex_unlock(&mtx);
-	
-	if (global_static_buffer == NULL) { 
-		printf("crypt failed\\n");
-		exit_code = 4;
-		goto exit;
+	hash = crypt_r("Initial example password.", salt, &buf1);
+	if (hash == NULL) {
+		printf("crypt_r (hash) failed.\\n");
+		return (3);
 	}
 
-	printf("crypt result: %s\\n", final);
+	printf("crypt_r (hash) result: %s\\n", hash);
+
+	/* Generate a crypt of a known value using the salt of a stored hash. */
+	check = crypt_r("Password provided at a later time.", hash, &buf2);
+	if (check == NULL) {
+		printf("crypt_r (check) failed.\\n");
+		return (4);
+	}
+
+	printf("crypt_r (check) result: %s\\n", check);
 
 	/*
-	 * Compare a string against a stored crypt
+	 * Do not leak anything about the original hash when comparing. Timing-
+	 * safe comparison is prudent.
 	 */
-
-	pthread_mutex_lock(&mtx);
-	global_static_buffer = crypt("is this it?", final);
-	strncpy(test, global_static_buffer, sizeof(test) );
-	pthread_mutex_unlock(&mtx);
-	
-	if (global_static_buffer == NULL) { 
-		printf("second crypt failed\\n");
-		exit_code = 5;
-		goto exit;
-	}
-	
-	printf("test result: %s\\n", test);
-	
-	/* a timing-safe string compare would be better */
-	if ( strncmp(test, final, MAX(sizeof(test), sizeof(final) ) ) == 0 ) {
-		printf("The two buffers match.\\n");
-	} else {
-		printf("The two buffers do not match.\\n");
+	if (timingsafe_bcmp(hash, check, strlen(hash)) != 0) {
+		printf("The two passwords do not match.\\n");
+		return (5);
 	}
 
-exit:
-	pthread_mutex_destroy(&mtx);
-exit1:
-	return exit_code;
+	printf("The two passwords match.\\n");
+
+	return (0);
 }
 .Ed
 .Sh SEE ALSO
-.Xr login 1 , 
-.Xr passwd 1 , 
-.Xr getpass 3 , 
-.Xr login_getcapstr 3 , 
-.Xr passwd 5 ,
-
+.Xr login 1 ,
+.Xr passwd 1 ,
+.Xr getpass 3 ,
+.Xr login_getcapstr 3 ,
+.Xr passwd 5
 .Sh HISTORY
-.Pp
-A rotor-based 
+A rotor-based
 .Fn crypt
-function appeared in Version 6 AT&T UNIX.  The
-current style 
+function appeared in Version 6 AT&T UNIX.
+The current style
 .Fn crypt
 first appeared in Version 7 AT&T UNIX.
 .Pp
-The
-.Tn DES
-section of the code (FreeSec 1.0) was developed outside the United
+The DES section of the code (FreeSec 1.0) was developed outside the United
 States of America as an unencumbered replacement for the U.S.-only
 .Nx
 libcrypt encryption library.
@@ -431,36 +426,42 @@ The
 function was added in
 .Fx 12.0 .
 .Sh AUTHORS
-Originally written by David Burren 
-.Mt davidb@werj.com.au , 
-later additions and changes by Poul-Henning Kamp, Mark R V Murray, Michael
-Bretterklieber, Kris Kennaway, Brian Feldman, Paul Herman, Niels Provos, and 
-Derek Marcotte.
-
+Originally written by
+.An -nosplit
+.An David Burren Aq Mt davidb@werj.com.au
+, later additions and changes by
+.An Poul-Henning Kamp ,
+.An Mark R V Murray ,
+.An Michael Bretterklieber ,
+.An Kris Kennaway ,
+.An Brian Feldman ,
+.An Paul Herman ,
+.An Niels Provos , and
+.An Derek Marcotte .
 .Sh BUGS
-The 
+The
 .Fn crypt
 function returns a pointer to static data, and subsequent
-calls to 
+calls to
 .Fn crypt
-will modify the same data.  Likewise, 
+will modify the same data.
+Likewise,
 .Fn crypt_set_format
 modifies static data.
-
 .Sh SECURITY CONSIDERATIONS
-The following algorithms are considered insecure, and are not recommended 
-for new implementations: 
-.Sx md5-crypt , 
-.Sx DES Extended Format , 
-.Sx Traditional DES Format , 
-and 
+The following algorithms are considered insecure, and are not recommended
+for new implementations:
+.Sx md5-crypt ,
+.Sx DES Extended Format ,
+.Sx Traditional DES Format ,
+and
 .Sx NT-Hash .
 .Pp
-.Sx bcrypt 
-is preferred over 
+.Sx bcrypt
+is preferred over
 .Sx sha512-crypt ,
-or 
-.Sx sha256-crypt , 
-because of 
+or
+.Sx sha256-crypt ,
+because of
 its resiliance to pipelined, and GPU based attacks - unless having a
 NIST-approved algorithm is a requirement.
