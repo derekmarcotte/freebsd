@@ -19,7 +19,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd June 14, 2007
+.Dd August 2, 2018
 .Dt LOGIN_CAP 3
 .Os
 .Sh NAME
@@ -362,7 +362,7 @@ on the
 of capability each deals with, be it a simple string, a list,
 a time value, a file or memory size value, a path (consisting of
 a colon-separated list of directories) or a boolean flag.
-The manpage for
+The man page for
 .Xr login.conf 5
 deals in specific tags and their type.
 .Pp
@@ -469,7 +469,7 @@ kilobytes, megabytes, gigabytes, and on systems that support the
 .Vt long long
 type, terabytes.
 The suffix used determines the units, and multiple values and
-units may be used in combination (e.g.\& 1m500k = 1.5 megabytes).
+units may be used in combination (e.g.,\& 1m500k = 1.5 megabytes).
 A value with no suffix is interpreted as bytes,
 .Ql B
 as 512-byte blocks,
@@ -570,11 +570,11 @@ on the specifier fails,
 .Fa error
 is returned to indicate this.
 .Fn login_setcryptfmt
-and 
+and
 .Xr crypt_set_format 3
-are both deprecated in favour of 
-.Xr login_getcapstr 3
-and 
+are both deprecated in favor of
+.Fn login_getcapstr
+and
 .Xr crypt_makesalt 3 .
 .El
 .Sh SEE ALSO

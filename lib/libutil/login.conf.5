@@ -19,7 +19,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd July 8, 2011
+.Dd August 3, 2018
 .Dt LOGIN.CONF 5
 .Os
 .Sh NAME
@@ -278,14 +278,14 @@ multiplied by 5 seconds.
 allowed before the login fails.
 .It "passwd_format	string	sha512	The encryption format that new or"
 changed passwords will use.
-Valid values include Modular Crypt Format strings, 
-.Qq des , 
-.Qq md5 , 
-.Qq blf , 
+Valid values include Modular Crypt Format strings,
+.Qq des ,
+.Qq md5 ,
+.Qq blf ,
 .Qq sha256
-and 
-.Qq sha512 ; 
-see 
+and
+.Qq sha512 ;
+see
 .Xr crypt 3
 for details.
 NIS clients using a
