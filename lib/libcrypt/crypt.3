@@ -30,7 +30,7 @@
 .\"
 .\" $FreeBSD$
 .\"
-.Dd July 31, 2018
+.Dd August 16, 2018
 .Dt CRYPT 3
 .Os
 .Sh NAME
@@ -352,9 +352,11 @@ int main(void)
 	struct crypt_data buf1, buf2;
 	char *hash, *check;
 	char salt[256];
-	size_t salt_sz = sizeof(salt);
+	size_t salt_sz;
+	
+	salt_sz = sizeof(salt);
 
-	/* Generate a salt for a crypt format specification. */
+	/* Generate a new salt for a crypt format specification. */
 	if (crypt_makesalt(salt, "$2b$08$", &salt_sz)) {
 		if (salt_sz != sizeof(salt)) {
 			printf("Buffer too small for format salt.\\n");
@@ -389,10 +391,10 @@ int main(void)
 	printf("crypt_r (check) result: %s\\n", check);
 
 	/*
-	 * Do not leak anything about the original hash when comparing. Timing-
+	 * Do not leak anything about the original hash when comparing. Timing
 	 * safe comparison is prudent.
 	 */
-	if (timingsafe_bcmp(hash, check, strlen(hash)) != 0) {
+	if (timingsafe_bcmp(hash, check, strlen(hash))) {
 		printf("The two passwords do not match.\\n");
 		return (5);
 	}

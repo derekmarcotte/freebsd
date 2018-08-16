@@ -31,7 +31,6 @@
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
-#include <sys/types.h>
 #include <sys/param.h>
 
 #include <errno.h>
@@ -44,10 +43,14 @@ __FBSDID("$FreeBSD$");
 
 #include "crypt.h"
 
+static const struct crypt_format *crypt_find_format(const char *);
+static bool crypt_validate_format(const char *, const char *);
+static bool crypt_format_is_modular(const char*);
+
 /*
  * List of supported crypt(3) formats.
  *
- * Ordered from most probable to least probable[1], for the find algorithm to 
+ * Ordered from most probable to least probable[1], for the find algorithm to
  * preform a little better in some cases.  Generally, order is not important.
  *
  * 1. as guessed by a random person
@@ -59,9 +62,10 @@ static const struct crypt_format {
 	const char *magic;
 	const char *const default_format;
 	const char *const format_regex;
-	
+
 	const uint8_t salt_bytes;
-	const bool salt_trailing_sign;	/* Do we tack on a $ at the end of the salt */
+	/* Do we tack on a $ at the end of the salt? */
+	const bool salt_trailing_sign;
 } crypt_formats[] = {
 	{ "md5",	crypt_md5,	"$1$",	"$1$",		"^\\$1\\$$",				8,	true	},
 	{ "sha512",	crypt_sha512,	"$6$",	"$6$",		"^\\$6\\$(rounds=[0-9]{0,9}\\$)?$",	16,	true	},
@@ -74,100 +78,95 @@ static const struct crypt_format {
 #endif
 	{ "nth",	crypt_nthash,	"$3$",	"$3$",		"^\\$3\\$$",				0,	false	},
 	{ "sha256",	crypt_sha256,	"$5$",	"$5$",		"^\\$5\\$(rounds=[0-9]{0,9}\\$)?$",	16,	true	},
-	
+
 	/* Sentinel */
 	{ NULL,		NULL,		NULL,	NULL,		NULL,	0,	NULL	}
 };
 
+/*
+ * Must be des if system has des. This was attempted to be changed on r261913,
+ * but had to be reverted on r264964, with the following comment:
+ *
+ *   r261913 broke DES passwords, because the only way they could work,
+ *   since they don't have an easily recognizable signature, was if they
+ *   were the default.
+ *
+ */
 #ifdef HAS_DES
-/* Must be des if system has des. */
 static char default_format[256] = "des";
-#else 
+#else
 static char default_format[256] = "sha512";
 #endif
 
-/* Local-scope only. */
-static const struct crypt_format *crypt_find_format(const char *);
-static bool crypt_validate_format_regex(const char *, const char *);
-static bool crypt_format_is_modular(const char*);
-
 #define DES_SALT_ALPHABET \
-	"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /*
- * Fill a buffer with a new salt conforming to a particular crypt format
+ * Fill a buffer with a new salt conforming to a particular crypt format.
  *
- * We're breaking the API convention established by crypt_set_format (return 0 
- * on success)  * because it might be nice to behave like the rest of C 
- * libraries, rather than the one deprecated function.
+ * We're breaking the API convention established by crypt_set_format (return 0
+ * on success) because it might be nice to behave like the rest of C libraries,
+ * rather than the one deprecated function.
  *
  */
 int
 crypt_makesalt(char *out, const char *format, size_t *outlen)
 {
 	const struct crypt_format *cf;
-	uint8_t rand_buf[4];
-	size_t reqsz;
+	uint8_t rand_buf[3];
+	char rand_b64[5];
+	char *rand_b64_p;
 	const char *prefix;
 	size_t prefix_len;
-	
-	/* Diff really is a size, but keeping it api compatible with
-	 * b64_from_24bit.  Only up to 4 bytes anyways, shouldn't be a problem,
-	 * right?
-	 */
+	size_t reqsz;
 	int diff;
 	unsigned int i;
-	
-	/* Find the appropriate format entry. */
+
 	cf = crypt_find_format(format);
-	if (cf == NULL)
+	if (cf == NULL) {
 		return (EINVAL);
-	
+	}
+
 	/* Calculate required output size. */
 	if (crypt_format_is_modular(format)) {
 		prefix = format;
 	} else {
 		prefix = cf->default_format;
 	}
+
 	prefix_len = strlen(prefix);
 	reqsz = prefix_len + (size_t) cf->salt_bytes;
-	
-	if (cf->salt_trailing_sign)
+	if (cf->salt_trailing_sign) {
 		reqsz++;
-	
+	}
 	/* Trailing '\0' */
 	reqsz++;
-	
-	/* Does the output buffer have enough. */
+
 	if (reqsz > *outlen) {
 		*outlen = reqsz;
 		return (ENOMEM);
 	}
-	
-	/* Start building our output. strncpy will fill the remaining buffer
-	 * with zeros.  We know we have enough due to reqsz calulation above.
-	 */
-	strncpy(out, prefix, *outlen);
-	out += prefix_len;
-	
-	for (i = 0; i < cf->salt_bytes; i += 4 ) {
+
+	strlcpy(out, prefix, *outlen);
+	for (i = 0; i < cf->salt_bytes; i += 4) {
 		arc4random_buf(rand_buf, 3);
-		
+
 		diff = MIN(cf->salt_bytes - i, 4);
-		b64_from_24bit(rand_buf[2], rand_buf[1], rand_buf[0], diff, &out);
+		rand_b64_p = (char *) rand_b64;
+		b64_from_24bit(rand_buf[2], rand_buf[1], rand_buf[0], diff,
+		    &rand_b64_p);
+		rand_b64[diff] = '\0';
+
+		strlcat(out, rand_b64, *outlen);
 	}
-	
-	/* Cleanup random buffer. */
-	explicit_bzero(rand_buf, sizeof(rand_buf) );
-	
+
+	explicit_bzero(rand_buf, sizeof(rand_buf));
+	explicit_bzero(rand_b64, sizeof(rand_b64));
+
 	if (cf->salt_trailing_sign) {
-		out[0] = '$';
-		out++;
+		strlcat(out, "$", *outlen);
 	}
-	
-	/* Don't need to add trailing '\0', strncpy above will have set it
-	 * already.
-	 */
+
 	return (0);
 }
 
@@ -188,44 +187,43 @@ int
 crypt_set_format(const char *format)
 {
 
-	if (crypt_find_format(format) == NULL) {
+	if (!crypt_find_format(format)) {
 		return (0);
 	}
-	
-	strncpy(default_format, format, sizeof(default_format) );
+	strlcpy(default_format, format, sizeof(default_format));
 	return (1);
 }
 
 /*
- * is the crypt format a recognized as valid
+ * Is the crypt format a recognized as valid.
  */
 static bool
-crypt_format_validate_regex(const char* regex, const char *format) 
+crypt_format_validate(const char* regex, const char *format)
 {
 	regex_t regex_c;
-	int res = 0;
-	
-	/* We could cache these, but they are simple, and this function won't be
+	int res;
+
+	/*
+	 * We could cache these, but they are simple, and this function won't be
 	 * called often.
 	 */
-	if (regcomp(&regex_c, regex, REG_EXTENDED) != 0) {
+	if (regcomp(&regex_c, regex, REG_EXTENDED)) {
 		return (false);
 	}
-	
 	res = regexec(&regex_c, format, 0, NULL, 0);
 	regfree(&regex_c);
-	
 	return (!res);
 }
 
 /*
- * Is the crypt format a fancy-dancy modular format.
+ * Is the crypt format a modular format.
  */
 static bool
-crypt_format_is_modular(const char* format) 
+crypt_format_is_modular(const char* format)
 {
 
-	/* We'll treat 'new des' as modular, because they can set 24 bits of
+	/*
+	 * We'll treat 'new des' as modular, because they can set 24 bits of
 	 * count via salt.
 	 */
 	return (format[0] == '$' || format[0] == '_');
@@ -239,29 +237,28 @@ static const struct crypt_format *
 crypt_find_format(const char *format)
 {
 	const struct crypt_format *cf;
-	
-	if (strcmp(format, "default") == 0 ) {
+
+	if (!strcmp(format, "default")) {
 		format = default_format;
 	}
-	
-	if (crypt_format_is_modular(format) ) {
-		/* modular crypt magic lookup, force full syntax */
+	if (crypt_format_is_modular(format)) {
+		/* Modular crypt magic lookup, force full syntax. */
 		for (cf = crypt_formats; cf->name != NULL; ++cf) {
 			if (cf->magic != NULL &&
 			    strstr(format, cf->magic) == format &&
-			    crypt_format_validate_regex(cf->format_regex, format) ) {
+			    crypt_format_validate(cf->format_regex, format)) {
 				return (cf);
 			}
 		}
 	} else {
-		/* name lookup */
+		/* Name lookup. */
 		for (cf = crypt_formats; cf->name != NULL; ++cf) {
-			if (strcasecmp(cf->name, format) == 0) {
+			if (!strcasecmp(cf->name, format)) {
 				return (cf);
 			}
 		}
 	}
-	
+
 	return (NULL);
 }
 
@@ -278,15 +275,16 @@ crypt_r(const char *passwd, const char *salt, struct crypt_data *data)
 #ifdef HAS_DES
 	int len;
 #endif
-	
+
 	/* Use the magic in the salt for lookup. */
-	for (cf = crypt_formats; cf->name != NULL; ++cf)
+	for (cf = crypt_formats; cf->name != NULL; ++cf) {
 		if (cf->magic != NULL && strstr(salt, cf->magic) == salt) {
 			func = cf->func;
 			goto match;
 		}
+	}
 #ifdef HAS_DES
-	/* Check if it's standard des. */
+	/* Check if it's standard DES. */
 	len = strlen(salt);
 	if ((len == 13 || len == 2) && strspn(salt, DES_SALT_ALPHABET) == len) {
 		func = crypt_des;
@@ -296,8 +294,9 @@ crypt_r(const char *passwd, const char *salt, struct crypt_data *data)
 	cf = crypt_find_format(default_format);
 	func = cf->func;
 match:
-	if (func(passwd, salt, data->__buf) != 0)
+	if (func(passwd, salt, data->__buf)) {
 		return (NULL);
+	}
 	return (data->__buf);
 }
 

@@ -85,7 +85,8 @@ static char	*pw_password(struct userconf * cnf, char const * user,
 static char	*shell_path(char const * path, char *shells[], char *sh);
 static void	rmat(uid_t uid);
 static void	rmopie(char const * name);
-static void	copy_passwd_format(char *passwd_format, login_cap_t *lc, size_t max);
+static void	copy_passwd_format(char *passwd_format, login_cap_t *lc,
+    size_t max);
 
 static void
 mkdir_home_parents(int dfd, const char *dir)
@@ -226,7 +227,7 @@ pw_set_passwd(struct passwd *pwd, int fd, bool precrypted, bool update)
 		pwd->pw_passwd = strdup(line);
 	} else {
 		lc = login_getpwclass(pwd);
-		copy_passwd_format(passwd_format, lc, sizeof(passwd_format) );
+		copy_passwd_format(passwd_format, lc, sizeof(passwd_format));
 		login_close(lc);
 		pwd->pw_passwd = pw_pwcrypt(line, passwd_format);
 	}
@@ -234,25 +235,25 @@ pw_set_passwd(struct passwd *pwd, int fd, bool precrypted, bool update)
 }
 
 void
-copy_passwd_format(char *passwd_format, login_cap_t *lc, size_t max) {
+copy_passwd_format(char *passwd_format, login_cap_t *lc, size_t max)
+{
 	const char *cap;
 	const char *def = "sha512";
 
 	if (lc == NULL) {
 		warn("setting crypt(3) format");
-		strncpy(passwd_format, def, max);
+		strlcpy(passwd_format, def, max);
 		return;
 	}
-
 
 	cap = login_getcapstr(lc, "passwd_format", def, NULL);
 	if (cap == NULL) {
 		warn("setting crypt(3) format");
-		strncpy(passwd_format, def, max);
+		strlcpy(passwd_format, def, max);
 		return;
 	}
 
-	strncpy(passwd_format, cap, max);
+	strlcpy(passwd_format, cap, max);
 	return;
 }
 
@@ -505,53 +506,21 @@ pw_shellpolicy(struct userconf * cnf)
 	return shell_path(cnf->shelldir, cnf->shells, cnf->shell_default);
 }
 
-char           *
+char *
 pw_pwcrypt(const char *password, const char *format)
 {
-	int		i;
-	char		*salt;
+	char		salt[256];
 	size_t		salt_sz;
-	int		salt_err;
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
 
-	salt = NULL;
-	salt_err = 0;
-	salt_sz = 64 * sizeof(char);
-	/* We might need more memory than we guessed at initialization.
-	 * Let's retry up to one time with new information.
-	 */
-	for (i = 0; i < 2 && salt_err == 0 && salt == NULL; i++ ) {
-		if ((salt = malloc(salt_sz)) == NULL) {
-			errx(EX_UNAVAILABLE, "out of memory");
-		}
-
-		salt_err = crypt_makesalt(salt, format, &salt_sz);
-		switch(salt_err) {
-		case ENOMEM:
-			/* Try allocating a larger amount if this is
-			 * the first time trying
-			 */
-			if (i == 0)
-				salt_err = 0;
-
-			/* Fallthrough */
-		case EINVAL:
-			/* Terminate loop with salt_err */
-			free(salt);
-			salt = NULL;
-
-			break;
-		}
-	}
-
-	if (salt == NULL) {
+	salt_sz = sizeof(salt);
+	if (crypt_makesalt(salt, format, &salt_sz)) {
 		errx(EX_CONFIG, "Unable to create salt for crypt(3) format: %s", format);
 	}
 
 	cryptpw = crypt(password, salt);
-	free(salt);
 	if (cryptpw == NULL)
 		errx(EX_CONFIG, "crypt(3) failure");
 	pwlen = strlcpy(buf, cryptpw, sizeof(buf));
@@ -1448,7 +1417,8 @@ pw_user_add(int argc, char **argv, char *arg1)
 	lc = login_getpwclass(pwd);
 	copy_passwd_format(passwd_format, lc, sizeof(passwd_format));
 	login_close(lc);
-	pwd->pw_passwd = pw_password(cmdcnf, pwd->pw_name, passwd_format, dryrun);
+	pwd->pw_passwd = pw_password(cmdcnf, pwd->pw_name, passwd_format,
+	    dryrun);
 	if (pwd->pw_uid == 0 && strcmp(pwd->pw_name, "root") != 0)
 		warnx("WARNING: new account `%s' has a uid of 0 "
 		    "(superuser access!)", pwd->pw_name);
@@ -1791,11 +1761,12 @@ pw_user_mod(int argc, char **argv, char *arg1)
 
 	if (passwd && conf.fd == -1) {
 		lc = login_getpwclass(pwd);
-		copy_passwd_format(passwd_format, lc, sizeof(passwd_format) );
+		copy_passwd_format(passwd_format, lc, sizeof(passwd_format));
 		login_close(lc);
 		cnf->default_password = passwd_val(passwd,
 		    cnf->default_password);
-		pwd->pw_passwd = pw_password(cnf, pwd->pw_name, passwd_format, dryrun);
+		pwd->pw_passwd = pw_password(cnf, pwd->pw_name, passwd_format,
+		    dryrun);
 		edited = true;
 	}
 
